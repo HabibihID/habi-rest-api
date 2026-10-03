@@ -5,6 +5,9 @@ import { youtubeDl } from '../lib/downloaders/youtube.js'
 import { pinterestDl } from '../lib/downloaders/pinterest.js'
 import { twitterDl } from '../lib/downloaders/twitter.js'
 import { instagramDl } from '../lib/downloaders/instagram.js'
+import { capcutDl } from '../lib/downloaders/capcut.js'
+import { gdriveDl } from '../lib/downloaders/gdrive.js'
+import { ytSearch } from '../lib/downloaders/ytsearch.js'
 
 const router = Router()
 
@@ -70,6 +73,26 @@ router.get('/twitter', (req, res) => {
 router.get('/instagram', (req, res) => {
   const url = needUrl(req, res); if (!url) return
   handle(res, () => instagramDl(url))
+})
+
+// CapCut
+router.get('/capcut', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => capcutDl(url))
+})
+
+// Google Drive
+router.get('/gdrive', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => gdriveDl(url))
+})
+
+// YouTube search
+router.get('/ytsearch', (req, res) => {
+  const q = req.query.q
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi' })
+  const limit = Math.min(parseInt(req.query.limit) || 10, 20)
+  handle(res, () => ytSearch(q, limit))
 })
 
 export default router
