@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { bratGen, bratVidGen } from '../lib/generators/brat.js'
 import { iqcGen } from '../lib/generators/iqc.js'
+import { buildIqc2 } from '../lib/generators/iqc2.js'
 import { qrGen } from '../lib/generators/qrcode.js'
 import { shortlink } from '../lib/generators/shortlink.js'
 import { ssweb } from '../lib/generators/ssweb.js'
@@ -51,6 +52,11 @@ router.get('/iqc', (req, res) => {
   const text = needText(req, res); if (!text) return
   const time = req.query.time || null
   sendBinary(res, () => iqcGen(text, time), 'image/png')
+})
+router.get('/iqc2', (req, res) => {
+  const text = needText(req, res); if (!text) return
+  const bg = req.query.bg || ''
+  sendBinary(res, () => buildIqc2(text, bg), 'image/png')
 })
 router.get('/qrcode', (req, res) => {
   const text = needText(req, res); if (!text) return
