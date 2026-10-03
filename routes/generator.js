@@ -19,6 +19,7 @@ import { fakeCallPort } from '../lib/generators/fakecall-port.js'
 import { fakeOvoPort } from '../lib/generators/fakeovo-port.js'
 import { ttqcPort } from '../lib/generators/ttqc-port.js'
 import { igqcPort } from '../lib/generators/igqc-port.js'
+import { kalenderPort } from '../lib/generators/kalender-port.js'
 
 const router = Router()
 
@@ -229,8 +230,13 @@ router.get('/qcanime', (req, res) => {
   sendBinary(res, () => qcanimeGen(text, req.query.author), 'image/png')
 })
 // Kalender
-router.get('/kalender', (req, res) => {
-  sendBinary(res, () => kalenderGen(req.query.bulan, req.query.tahun), 'image/png')
+router.get('/kalender', async (req, res) => {
+  try {
+    const buf = await kalenderPort(req.query.bulan, req.query.tahun)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
 })
 // Fake FF / ML
 router.get('/fakeff', (req, res) => {
