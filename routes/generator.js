@@ -18,6 +18,7 @@ import { fakeDanaPort } from '../lib/generators/fakedana-port.js'
 import { fakeCallPort } from '../lib/generators/fakecall-port.js'
 import { fakeOvoPort } from '../lib/generators/fakeovo-port.js'
 import { ttqcPort } from '../lib/generators/ttqc-port.js'
+import { igqcPort } from '../lib/generators/igqc-port.js'
 
 const router = Router()
 
@@ -213,9 +214,15 @@ router.get('/ttqc', async (req, res) => {
     res.status(500).json({ status: false, message: e.message })
   }
 })
-router.get('/igqc', (req, res) => {
+router.get('/igqc', async (req, res) => {
   const text = needText(req, res); if (!text) return
-  sendBinary(res, () => igqcGen(text, req.query.author), 'image/png')
+  const username = req.query.username || req.query.author || 'User'
+  try {
+    const buf = await igqcPort(text, username)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
 })
 router.get('/qcanime', (req, res) => {
   const text = needText(req, res); if (!text) return
