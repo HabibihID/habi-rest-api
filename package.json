@@ -1,1 +1,20 @@
-{"dependencies":{"axios":"^1.20.0","better-sqlite3":"^11.0.0","brat-canvas":"^1.0.30","cors":"^2.8.5","express":"^4.19.2","iqc-canvas":"^1.0.37","qrcode":"^1.5.4"},"description":"HABI REST API - Downloader & tools API","main":"index.js","name":"habi-rest-api","scripts":{"start":"node index.js"},"type":"module","version":"1.0.0"}
+{
+  "dependencies": {
+    "axios": "^1.20.0",
+    "better-sqlite3": "^11.0.0",
+    "brat-canvas": "^1.0.30",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "iqc-canvas": "^1.0.37",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.34.0"
+  },
+  "description": "HABI REST API - Downloader & tools API",
+  "main": "index.js",
+  "name": "habi-rest-api",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "type": "module",
+  "version": "1.0.0"
+}
