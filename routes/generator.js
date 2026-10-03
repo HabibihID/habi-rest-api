@@ -77,10 +77,20 @@ router.get('/translate', async (req, res) => {
 
 // Lirik
 router.get('/lirik', async (req, res) => {
+  const q = req.query.q
   const artist = req.query.artist
   const title = req.query.title
+  // Mode search: ?q=judul lagu
+  if (q && !artist && !title) {
+    try {
+      const result = await lirik('_search_', q)
+      return res.json({ status: true, ...result })
+    } catch (e) {
+      return res.status(500).json({ status: false, message: e.message })
+    }
+  }
   if (!artist || !title) {
-    return res.status(400).json({ status: false, message: 'Parameter ?artist= & ?title= wajib diisi' })
+    return res.status(400).json({ status: false, message: 'Parameter ?q= atau ?artist= & ?title= wajib diisi' })
   }
   try {
     const result = await lirik(artist, title)
