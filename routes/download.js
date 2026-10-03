@@ -8,6 +8,7 @@ import { instagramDl } from '../lib/downloaders/instagram.js'
 import { capcutDl } from '../lib/downloaders/capcut.js'
 import { gdriveDl } from '../lib/downloaders/gdrive.js'
 import { ytSearch } from '../lib/downloaders/ytsearch.js'
+import { aioDl } from '../lib/downloaders/aio.js'
 import { mediafireDl } from '../lib/downloaders/mediafire.js'
 import { spotifyDl } from '../lib/downloaders/spotify.js'
 import { threadsDl } from '../lib/downloaders/threads.js'
@@ -96,6 +97,12 @@ router.get('/ytsearch', (req, res) => {
   if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi' })
   const limit = Math.min(parseInt(req.query.limit) || 10, 20)
   handle(res, () => ytSearch(q, limit))
+})
+
+// All-in-one media downloader
+router.get('/aio', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => aioDl(url))
 })
 
 

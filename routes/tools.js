@@ -24,6 +24,7 @@ import { ringkasArtikel } from '../lib/tools/ringkas.js'
 import { cryptoPrice } from '../lib/tools/crypto.js'
 import { kurs } from '../lib/tools/kurs.js'
 import { animeInfo } from '../lib/tools/anime.js'
+import { removeBg } from '../lib/tools/removebg.js'
 import { ephoto, ephotoEffects } from '../lib/tools/ephoto.js'
 import { enhanceVideo, MAX_VIDEO_SIZE as MAX_VIDEO } from '../lib/tools/hdvideo.js'
 
@@ -295,6 +296,18 @@ router.get('/anime', async (req, res) => {
   try {
     const data = await animeInfo(q)
     res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- RemoveBG: hapus background (terima URL gambar) ----
+router.get('/removebg', async (req, res) => {
+  const url = req.query.url
+  if (!url) return res.status(400).json({ status: false, message: 'Parameter ?url= wajib diisi' })
+  try {
+    const buf = await removeBg(url)
+    res.type('image/png').send(buf)
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
