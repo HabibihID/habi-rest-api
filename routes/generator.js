@@ -170,11 +170,6 @@ router.get('/fakedana', async (req, res) => {
   }
 })
 // Fake Chat iOS (legacy SVG - akan diganti)
-router.get('/fakechat', (req, res) => {
-  const nama = req.query.nama || 'Teman'
-  const pesan = needText(req, res, 'pesan'); if (!pesan) return
-  sendBinary(res, () => fakeChatGen(nama, pesan), 'image/png')
-})
 // Fake Call (port)
 router.get('/fakecall', async (req, res) => {
   const nama = needText(req, res, 'nama'); if (!nama) return
@@ -225,10 +220,6 @@ router.get('/igqc', async (req, res) => {
     res.status(500).json({ status: false, message: e.message })
   }
 })
-router.get('/qcanime', (req, res) => {
-  const text = needText(req, res); if (!text) return
-  sendBinary(res, () => qcanimeGen(text, req.query.author), 'image/png')
-})
 // Kalender
 router.get('/kalender', async (req, res) => {
   try {
@@ -239,13 +230,5 @@ router.get('/kalender', async (req, res) => {
   }
 })
 // Fake FF / ML
-router.get('/fakeff', (req, res) => {
-  const nick = needText(req, res, 'nick'); if (!nick) return
-  sendBinary(res, () => fakeFfGen(nick, req.query.level), 'image/png')
-})
-router.get('/fakeml', (req, res) => {
-  const nick = needText(req, res, 'nick'); if (!nick) return
-  sendBinary(res, () => fakeMlGen(nick, req.query.rank), 'image/png')
-})
 
 export default router
