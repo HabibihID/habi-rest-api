@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HABI REST API</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh}
+header{background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:3rem 1rem;text-align:center}
+header h1{font-size:2.5rem;margin-bottom:.5rem}
+header p{opacity:.85}
+main{max-width:900px;margin:0 auto;padding:2rem 1rem}
+.card{background:#1a1a2e;border:1px solid #2d2d44;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+.card h2{color:#a78bfa;margin-bottom:1rem;font-size:1.2rem}
+.endpoint{background:#12121f;border-radius:8px;padding:1rem;margin-bottom:.75rem;font-family:monospace;font-size:.85rem}
+.method{display:inline-block;background:#10b981;color:#fff;padding:.15rem .6rem;border-radius:4px;font-weight:700;margin-right:.5rem}
+.url{color:#7dd3fc;word-break:break-all}
+.desc{color:#9ca3af;margin-top:.5rem;font-family:'Segoe UI',sans-serif;font-size:.85rem}
+.param{color:#fbbf24}
+footer{text-align:center;padding:2rem;color:#6b7280;font-size:.85rem}
+code{background:#2d2d44;padding:.15rem .4rem;border-radius:4px;font-size:.85em}
+</style>
+</head>
+<body>
+<header>
+<h1>🚀 HABI REST API</h1>
+<p>Downloader API untuk bot HABI AI</p>
+</header>
+<main>
+<div class="card">
+<h2>🔑 Autentikasi</h2>
+<p>Semua endpoint butuh API key. Kirim via query <code>?apikey=KEY</code> atau header <code>X-API-Key</code>.</p>
+</div>
+<div class="card">
+<h2>📥 Downloader Endpoints</h2>
+<div class="endpoint"><span class="method">GET</span><span class="url">/api/tiktok?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">TikTok video HD no watermark + info</div></div>
+<div class="endpoint"><span class="method">GET</span><span class="url">/api/tiktokaudio?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">TikTok audio saja (MP3)</div></div>
+<div class="endpoint"><span class="method">GET</span><span class="url">/api/facebook?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Facebook video (HD/SD)</div></div>
+<div class="endpoint"><span class="method">GET</span><span class="url">/api/youtube?url=<span class="param">LINK</span>&type=<span class="param">mp3|mp4</span>&apikey=<span class="param">KEY</span></span><div class="desc">YouTube MP3 atau MP4</div></div>
+<div class="endpoint"><span class="method">GET</span><span class="url">/api/instagram?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Instagram post/reel</div></div>
+<div class="endpoint"><span class="method">GET</span><span class="url">/api/twitter?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Twitter/X video & gambar</div></div>
+<div class="endpoint"><span class="method">GET</span><span class="url">/api/pinterest?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Pinterest foto & video</div></div>
+</div>
+<div class="card">
+<h2>ℹ️ Info</h2>
+<div class="endpoint"><span class="method">GET</span><span class="url">/health</span><div class="desc">Cek status server (tanpa API key)</div></div>
+</div>
+</main>
+<footer>HABI REST API v1.0 • by Habibih Official ID</footer>
+</body>
+</html>

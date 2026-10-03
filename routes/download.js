@@ -1,0 +1,75 @@
+import { Router } from 'express'
+import { tiktokDl } from '../lib/downloaders/tiktok.js'
+import { facebookDl } from '../lib/downloaders/facebook.js'
+import { youtubeDl } from '../lib/downloaders/youtube.js'
+import { pinterestDl } from '../lib/downloaders/pinterest.js'
+import { twitterDl } from '../lib/downloaders/twitter.js'
+import { instagramDl } from '../lib/downloaders/instagram.js'
+
+const router = Router()
+
+function needUrl(req, res) {
+  const url = req.query.url
+  if (!url) {
+    res.status(400).json({ status: false, message: 'Parameter ?url= wajib diisi' })
+    return null
+  }
+  return url
+}
+
+async function handle(res, fn) {
+  try {
+    const data = await fn()
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+}
+
+// TikTok video
+router.get('/tiktok', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => tiktokDl(url))
+})
+
+// TikTok audio only
+router.get('/tiktokaudio', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, async () => {
+    const d = await tiktokDl(url)
+    return { title: d.title, author: d.author, audio: d.audio }
+  })
+})
+
+// Facebook
+router.get('/facebook', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => facebookDl(url))
+})
+
+// YouTube (mp3/mp4)
+router.get('/youtube', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  const type = req.query.type === 'mp3' ? 'mp3' : 'mp4'
+  handle(res, () => youtubeDl(url, type))
+})
+
+// Pinterest
+router.get('/pinterest', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => pinterestDl(url))
+})
+
+// Twitter/X
+router.get('/twitter', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => twitterDl(url))
+})
+
+// Instagram
+router.get('/instagram', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => instagramDl(url))
+})
+
+export default router
