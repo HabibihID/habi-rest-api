@@ -10,6 +10,7 @@ import { gdriveDl } from '../lib/downloaders/gdrive.js'
 import { ytSearch } from '../lib/downloaders/ytsearch.js'
 import { mediafireDl } from '../lib/downloaders/mediafire.js'
 import { spotifyDl } from '../lib/downloaders/spotify.js'
+import { threadsDl } from '../lib/downloaders/threads.js'
 
 const router = Router()
 
@@ -108,6 +109,12 @@ router.get('/mediafire', (req, res) => {
 router.get('/spotify', (req, res) => {
   const url = needUrl(req, res); if (!url) return
   handle(res, () => spotifyDl(url))
+})
+
+// Threads (butuh headless browser di server)
+router.get('/threads', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => threadsDl(url))
 })
 
 export default router
