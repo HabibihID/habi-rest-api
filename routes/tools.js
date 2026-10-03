@@ -13,6 +13,9 @@ import { Router } from 'express'
 import express from 'express'
 import sharp from 'sharp'
 import axios from 'axios'
+import { join } from 'path'
+import { tmpdir } from 'os'
+import { writeFile, readFile, unlink } from 'fs/promises'
 import { skinToBlack } from '../lib/tools/skintoblack.js'
 import { uploadToCatbox } from '../lib/tools/tourl.js'
 import { ytTranscript } from '../lib/tools/yttranscript.js'
@@ -21,6 +24,7 @@ import { cryptoPrice } from '../lib/tools/crypto.js'
 import { kurs } from '../lib/tools/kurs.js'
 import { animeInfo } from '../lib/tools/anime.js'
 import { ephoto, ephotoEffects } from '../lib/tools/ephoto.js'
+import { enhanceVideo, MAX_VIDEO_SIZE as MAX_VIDEO } from '../lib/tools/hdvideo.js'
 
 const router = Router()
 
@@ -289,5 +293,34 @@ router.get('/ephoto', async (req, res) => {
 router.get('/ephoto/effects', (req, res) => {
   res.json({ status: true, effects: ephotoEffects() })
 })
+
+// ---- HD Video: enhance/upscale video pakai ffmpeg ----
+// POST /api/hdvideo — terima raw video body (max 50MB, max 60 detik).
+// Route-level express.raw supaya tidak bergantung wiring index.js.
+router.post('/hdvideo',
+  express.raw({ type: ['video/*', 'application/octet-stream'], limit: '55mb' }),
+  async (req, res) => {
+    const buf = req.body
+    if (!Buffer.isBuffer(buf) || !buf.length) {
+      return res.status(400).json({ status: false, message: 'Kirim video sebagai raw body (Content-Type: video/*)' })
+    }
+    if (buf.length > MAX_VIDEO) {
+      return res.status(413).json({ status: false, message: 'Video maksimal 50 MB' })
+    }
+    const tmpIn = join(tmpdir(), `hdv-in-${Date.now()}-${Math.round(Math.random() * 1e6)}.mp4`)
+    const tmpOut = join(tmpdir(), `hdv-out-${Date.now()}-${Math.round(Math.random() * 1e6)}.mp4`)
+    try {
+      await writeFile(tmpIn, buf)
+      await enhanceVideo(tmpIn, tmpOut)
+      const out = await readFile(tmpOut)
+      res.type('video/mp4').send(out)
+    } catch (e) {
+      res.status(500).json({ status: false, message: e.message })
+    } finally {
+      try { await unlink(tmpIn) } catch {}
+      try { await unlink(tmpOut) } catch {}
+    }
+  }
+)
 
 export default router
