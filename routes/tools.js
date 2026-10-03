@@ -10,8 +10,10 @@
 //   100% milik sendiri — upscale 2x + sharpen + normalisasi pakai sharp.
 
 import { Router } from 'express'
+import express from 'express'
 import sharp from 'sharp'
 import axios from 'axios'
+import { skinToBlack } from '../lib/tools/skintoblack.js'
 
 const router = Router()
 
@@ -149,6 +151,42 @@ router.post('/hd',
         .jpeg({ quality: 92 })
         .toBuffer()
       res.type('image/jpeg').send(out)
+    } catch (e) {
+      res.status(500).json({ status: false, message: e.message })
+    }
+  }
+)
+
+// ---- POST /skintoblack — ubah warna kulit jadi hitam pekat ----
+// Terima raw binary image; route-level raw parser supaya tidak bergantung
+// pada wiring index.js (express.raw hanya terdaftar untuk /api/removebg & /api/hd).
+// NOTE untuk parent: boleh juga menambahkan
+//   app.use('/api/skintoblack', express.raw({ type: ['image/*','application/octet-stream'], limit: '10mb' }))
+// di index.js seperti route lain.
+async function readRawBody(req) {
+  if (Buffer.isBuffer(req.body) && req.body.length) return req.body
+  const chunks = []
+  for await (const chunk of req) chunks.push(Buffer.from(chunk))
+  const buf = Buffer.concat(chunks)
+  return buf.length ? buf : null
+}
+
+router.post('/skintoblack',
+  express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }),
+  (req, res, next) => {
+    const ct = req.headers['content-type'] || ''
+    if (!ct.startsWith('image/') && !ct.startsWith('application/octet-stream')) {
+      return res.status(400).json({ status: false, message: 'Content-Type harus image/*' })
+    }
+    next()
+  },
+  async (req, res) => {
+    const buf = await readRawBody(req)
+    if (!buf) return res.status(400).json({ status: false, message: 'Kirim gambar sebagai raw body (Content-Type: image/*)' })
+    if (buf.length > MAX_IMG) return res.status(413).json({ status: false, message: 'Gambar maksimal 10 MB' })
+    try {
+      const out = await skinToBlack(buf)
+      res.type('image/png').send(out)
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }

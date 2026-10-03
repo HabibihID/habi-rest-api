@@ -7,6 +7,10 @@ import { createKey, revokeKey, listKeys } from './lib/db.js'
 import downloadRoutes from './routes/download.js'
 import generatorRoutes from './routes/generator.js'
 import toolsRoutes from './routes/tools.js'
+import gamesRoutes from './routes/games.js'
+import islamiRoutes from './routes/islami.js'
+import stalkRoutes from './routes/stalk.js'
+import aiRoutes from './routes/ai.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -16,6 +20,7 @@ app.use(cors())
 // Raw binary untuk endpoint upload gambar (harus SEBELUM express.json)
 app.use('/api/removebg', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
 app.use('/api/hd', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
+app.use('/api/skintoblack', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -29,6 +34,10 @@ app.use('/api', authMiddleware)
 app.use('/api', downloadRoutes)
 app.use('/api', generatorRoutes)
 app.use('/api', toolsRoutes)
+app.use('/api', gamesRoutes)
+app.use('/api', islamiRoutes)
+app.use('/api', stalkRoutes)
+app.use('/api', aiRoutes)
 
 // Admin: buat API key baru
 app.post('/admin/key', adminMiddleware, (req, res) => {

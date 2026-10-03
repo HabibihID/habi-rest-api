@@ -20,6 +20,7 @@ import { fakeOvoPort } from '../lib/generators/fakeovo-port.js'
 import { ttqcPort } from '../lib/generators/ttqc-port.js'
 import { igqcPort } from '../lib/generators/igqc-port.js'
 import { kalenderPort } from '../lib/generators/kalender-port.js'
+import { fakeLobbyFf } from '../lib/generators/fakelobby.js'
 
 const router = Router()
 
@@ -230,5 +231,16 @@ router.get('/kalender', async (req, res) => {
   }
 })
 // Fake FF / ML
+// Fake Lobby FF (dibuat sendiri, bukan port bot orang)
+router.get('/fakelobbyff', async (req, res) => {
+  const username = needText(req, res, 'username'); if (!username) return
+  const lobby = req.query.lobby || 1
+  try {
+    const buf = await fakeLobbyFf(username, lobby)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
 
 export default router
