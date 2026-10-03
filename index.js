@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { authMiddleware, adminMiddleware } from './lib/auth.js'
 import { createKey, revokeKey, listKeys } from './lib/db.js'
 import downloadRoutes from './routes/download.js'
+import generatorRoutes from './routes/generator.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -22,6 +23,7 @@ app.get('/health', (req, res) => {
 // Semua /api/* butuh API key
 app.use('/api', authMiddleware)
 app.use('/api', downloadRoutes)
+app.use('/api', generatorRoutes)
 
 // Admin: buat API key baru
 app.post('/admin/key', adminMiddleware, (req, res) => {
