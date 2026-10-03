@@ -9,8 +9,10 @@ import { translate } from '../lib/generators/translate.js'
 import { lirik } from '../lib/generators/lirik.js'
 import { fakeChatGen, fakeCallGen } from '../lib/generators/fake.js'
 import { fakeDanaGen, fakeOvoGen } from '../lib/generators/fake-ewallet.js'
-import { qcwaGen, ttqcGen, igqcGen, qcanimeGen } from '../lib/generators/quote-var.js'
+import { qcwaGen as qcwaGenOld, ttqcGen, igqcGen, qcanimeGen } from '../lib/generators/quote-var.js'
 import { kalenderGen, fakeFfGen, fakeMlGen } from '../lib/generators/misc-canvas.js'
+import { fakeChIosGen } from '../lib/generators/fakechios.js'
+import { qcwaGen } from '../lib/generators/qcwa-port.js'
 
 const router = Router()
 
@@ -115,8 +117,26 @@ router.get('/shortlink', async (req, res) => {
   }
 })
 
-// === BATCH CANVAS ===
-// Fake Chat iOS
+// === BATCH CANVAS (port dari ditzzzx) ===
+// Fake CH iOS (Channel)
+router.get('/fakech', async (req, res) => {
+  const nama = needText(req, res, 'nama'); if (!nama) return
+  const pengikut = req.query.pengikut || '1.000'
+  const jam = req.query.jam || '12.00'
+  try {
+    // Optional PP via URL
+    let ppBuf = null
+    if (req.query.pp) {
+      const r = await fetch(req.query.pp, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+      if (r.ok) ppBuf = Buffer.from(await r.arrayBuffer())
+    }
+    const buf = await fakeChIosGen(nama, pengikut, jam, ppBuf)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+// Fake Chat iOS (legacy SVG - akan diganti)
 router.get('/fakechat', (req, res) => {
   const nama = req.query.nama || 'Teman'
   const pesan = needText(req, res, 'pesan'); if (!pesan) return
@@ -139,10 +159,15 @@ router.get('/fakeovo', (req, res) => {
   const nominal = req.query.nominal || '100000'
   sendBinary(res, () => fakeOvoGen(nama, nominal), 'image/png')
 })
-// Quote variants
-router.get('/qcwa', (req, res) => {
+// Quote variants (port dari ditzzzx)
+router.get('/qcwa', async (req, res) => {
   const text = needText(req, res); if (!text) return
-  sendBinary(res, () => qcwaGen(text, req.query.author), 'image/png')
+  try {
+    const buf = await qcwaGen(text, req.query.author || 'Anonymous', req.query.mode || 'dark')
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
 })
 router.get('/ttqc', (req, res) => {
   const text = needText(req, res); if (!text) return
