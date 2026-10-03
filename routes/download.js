@@ -8,6 +8,9 @@ import { instagramDl } from '../lib/downloaders/instagram.js'
 import { capcutDl } from '../lib/downloaders/capcut.js'
 import { gdriveDl } from '../lib/downloaders/gdrive.js'
 import { ytSearch } from '../lib/downloaders/ytsearch.js'
+import { threadsDl } from '../lib/downloaders/threads.js'
+import { mediafireDl } from '../lib/downloaders/mediafire.js'
+import { spotifyDl } from '../lib/downloaders/spotify.js'
 
 const router = Router()
 
@@ -93,6 +96,24 @@ router.get('/ytsearch', (req, res) => {
   if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi' })
   const limit = Math.min(parseInt(req.query.limit) || 10, 20)
   handle(res, () => ytSearch(q, limit))
+})
+
+// Threads
+router.get('/threads', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => threadsDl(url))
+})
+
+// MediaFire
+router.get('/mediafire', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => mediafireDl(url))
+})
+
+// Spotify
+router.get('/spotify', (req, res) => {
+  const url = needUrl(req, res); if (!url) return
+  handle(res, () => spotifyDl(url))
 })
 
 export default router
