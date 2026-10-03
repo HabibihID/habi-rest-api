@@ -9,7 +9,6 @@ import generatorRoutes from './routes/generator.js'
 import toolsRoutes from './routes/tools.js'
 import gamesRoutes from './routes/games.js'
 import islamiRoutes from './routes/islami.js'
-import stalkRoutes from './routes/stalk.js'
 import aiRoutes from './routes/ai.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -36,7 +35,6 @@ app.use('/api', generatorRoutes)
 app.use('/api', toolsRoutes)
 app.use('/api', gamesRoutes)
 app.use('/api', islamiRoutes)
-app.use('/api', stalkRoutes)
 app.use('/api', aiRoutes)
 
 // Admin: buat API key baru
