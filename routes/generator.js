@@ -15,6 +15,8 @@ import { fakeChIosGen } from '../lib/generators/fakechios.js'
 import { qcwaGen } from '../lib/generators/qcwa-port.js'
 import { fakeGcIosGen } from '../lib/generators/fakegc.js'
 import { fakeDanaPort } from '../lib/generators/fakedana-port.js'
+import { fakeCallPort } from '../lib/generators/fakecall-port.js'
+import { fakeOvoPort } from '../lib/generators/fakeovo-port.js'
 
 const router = Router()
 
@@ -170,17 +172,25 @@ router.get('/fakechat', (req, res) => {
   const pesan = needText(req, res, 'pesan'); if (!pesan) return
   sendBinary(res, () => fakeChatGen(nama, pesan), 'image/png')
 })
-// Fake Call
-router.get('/fakecall', (req, res) => {
+// Fake Call (port)
+router.get('/fakecall', async (req, res) => {
   const nama = needText(req, res, 'nama'); if (!nama) return
-  const durasi = req.query.durasi || '00:00'
-  sendBinary(res, () => fakeCallGen(nama, durasi), 'image/png')
+  try {
+    const buf = await fakeCallPort(nama)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
 })
-// Fake OVO
-router.get('/fakeovo', (req, res) => {
-  const nama = needText(req, res, 'nama'); if (!nama) return
-  const nominal = req.query.nominal || '100000'
-  sendBinary(res, () => fakeOvoGen(nama, nominal), 'image/png')
+// Fake OVO (port)
+router.get('/fakeovo', async (req, res) => {
+  const nominal = needText(req, res, 'nominal'); if (!nominal) return
+  try {
+    const buf = await fakeOvoPort(nominal)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
 })
 // Quote variants (port dari ditzzzx)
 router.get('/qcwa', async (req, res) => {
