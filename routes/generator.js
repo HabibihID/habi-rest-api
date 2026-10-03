@@ -13,6 +13,8 @@ import { qcwaGen as qcwaGenOld, ttqcGen, igqcGen, qcanimeGen } from '../lib/gene
 import { kalenderGen, fakeFfGen, fakeMlGen } from '../lib/generators/misc-canvas.js'
 import { fakeChIosGen } from '../lib/generators/fakechios.js'
 import { qcwaGen } from '../lib/generators/qcwa-port.js'
+import { fakeGcIosGen } from '../lib/generators/fakegc.js'
+import { fakeDanaPort } from '../lib/generators/fakedana-port.js'
 
 const router = Router()
 
@@ -131,6 +133,32 @@ router.get('/fakech', async (req, res) => {
       if (r.ok) ppBuf = Buffer.from(await r.arrayBuffer())
     }
     const buf = await fakeChIosGen(nama, pengikut, jam, ppBuf)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+// Fake GC iOS
+router.get('/fakegc', async (req, res) => {
+  const nama = needText(req, res, 'nama'); if (!nama) return
+  const anggota = req.query.anggota || '100'
+  try {
+    let ppBuf = null
+    if (req.query.pp) {
+      const r = await fetch(req.query.pp, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+      if (r.ok) ppBuf = Buffer.from(await r.arrayBuffer())
+    }
+    const buf = await fakeGcIosGen(nama, anggota, ppBuf)
+    res.type('image/png').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+// Fake DANA (port)
+router.get('/fakedana2', async (req, res) => {
+  const nominal = needText(req, res, 'nominal'); if (!nominal) return
+  try {
+    const buf = await fakeDanaPort(nominal)
     res.type('image/png').send(buf)
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
