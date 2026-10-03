@@ -6,18 +6,15 @@ import { shortlink } from '../lib/generators/shortlink.js'
 import { ssweb } from '../lib/generators/ssweb.js'
 import { memeGen, memeList } from '../lib/generators/meme.js'
 import { translate } from '../lib/generators/translate.js'
-import { lirik } from '../lib/generators/lirik.js'
 import { fakeChatGen, fakeCallGen } from '../lib/generators/fake.js'
 import { fakeDanaGen, fakeOvoGen } from '../lib/generators/fake-ewallet.js'
-import { qcwaGen as qcwaGenOld, ttqcGen, igqcGen, qcanimeGen } from '../lib/generators/quote-var.js'
+import { qcwaGen as qcwaGenOld, igqcGen, qcanimeGen } from '../lib/generators/quote-var.js'
 import { kalenderGen, fakeFfGen, fakeMlGen } from '../lib/generators/misc-canvas.js'
 import { fakeChIosGen } from '../lib/generators/fakechios.js'
-import { qcwaGen } from '../lib/generators/qcwa-port.js'
 import { fakeGcIosGen } from '../lib/generators/fakegc.js'
 import { fakeDanaPort } from '../lib/generators/fakedana-port.js'
 import { fakeCallPort } from '../lib/generators/fakecall-port.js'
 import { fakeOvoPort } from '../lib/generators/fakeovo-port.js'
-import { ttqcPort } from '../lib/generators/ttqc-port.js'
 import { igqcPort } from '../lib/generators/igqc-port.js'
 import { kalenderPort } from '../lib/generators/kalender-port.js'
 
@@ -82,31 +79,6 @@ router.get('/translate', async (req, res) => {
   const from = req.query.from || 'auto'
   try {
     const result = await translate(text, to, from)
-    res.json({ status: true, ...result })
-  } catch (e) {
-    res.status(500).json({ status: false, message: e.message })
-  }
-})
-
-// Lirik
-router.get('/lirik', async (req, res) => {
-  const q = req.query.q
-  const artist = req.query.artist
-  const title = req.query.title
-  // Mode search: ?q=judul lagu
-  if (q && !artist && !title) {
-    try {
-      const result = await lirik('_search_', q)
-      return res.json({ status: true, ...result })
-    } catch (e) {
-      return res.status(500).json({ status: false, message: e.message })
-    }
-  }
-  if (!artist || !title) {
-    return res.status(400).json({ status: false, message: 'Parameter ?q= atau ?artist= & ?title= wajib diisi' })
-  }
-  try {
-    const result = await lirik(artist, title)
     res.json({ status: true, ...result })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
@@ -191,25 +163,6 @@ router.get('/fakeovo', async (req, res) => {
   }
 })
 // Quote variants (port dari ditzzzx)
-router.get('/qcwa', async (req, res) => {
-  const text = needText(req, res); if (!text) return
-  try {
-    const buf = await qcwaGen(text, req.query.author || 'Anonymous', req.query.mode || 'dark')
-    res.type('image/png').send(buf)
-  } catch (e) {
-    res.status(500).json({ status: false, message: e.message })
-  }
-})
-router.get('/ttqc', async (req, res) => {
-  const text = needText(req, res); if (!text) return
-  const username = req.query.username || req.query.author || 'User'
-  try {
-    const buf = await ttqcPort(username, text, req.query.pp)
-    res.type('image/png').send(buf)
-  } catch (e) {
-    res.status(500).json({ status: false, message: e.message })
-  }
-})
 router.get('/igqc', async (req, res) => {
   const text = needText(req, res); if (!text) return
   const username = req.query.username || req.query.author || 'User'
