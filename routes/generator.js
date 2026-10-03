@@ -154,8 +154,8 @@ router.get('/fakegc', async (req, res) => {
     res.status(500).json({ status: false, message: e.message })
   }
 })
-// Fake DANA (port)
-router.get('/fakedana2', async (req, res) => {
+// Fake DANA saldo (port ditzzzx)
+router.get('/fakedana', async (req, res) => {
   const nominal = needText(req, res, 'nominal'); if (!nominal) return
   try {
     const buf = await fakeDanaPort(nominal)
@@ -176,12 +176,7 @@ router.get('/fakecall', (req, res) => {
   const durasi = req.query.durasi || '00:00'
   sendBinary(res, () => fakeCallGen(nama, durasi), 'image/png')
 })
-// Fake DANA / OVO
-router.get('/fakedana', (req, res) => {
-  const nama = needText(req, res, 'nama'); if (!nama) return
-  const nominal = req.query.nominal || '100000'
-  sendBinary(res, () => fakeDanaGen(nama, nominal), 'image/png')
-})
+// Fake OVO
 router.get('/fakeovo', (req, res) => {
   const nama = needText(req, res, 'nama'); if (!nama) return
   const nominal = req.query.nominal || '100000'
