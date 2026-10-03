@@ -7,6 +7,10 @@ import { ssweb } from '../lib/generators/ssweb.js'
 import { memeGen, memeList } from '../lib/generators/meme.js'
 import { translate } from '../lib/generators/translate.js'
 import { lirik } from '../lib/generators/lirik.js'
+import { fakeChatGen, fakeCallGen } from '../lib/generators/fake.js'
+import { fakeDanaGen, fakeOvoGen } from '../lib/generators/fake-ewallet.js'
+import { qcwaGen, ttqcGen, igqcGen, qcanimeGen } from '../lib/generators/quote-var.js'
+import { kalenderGen, fakeFfGen, fakeMlGen } from '../lib/generators/misc-canvas.js'
 
 const router = Router()
 
@@ -109,6 +113,61 @@ router.get('/shortlink', async (req, res) => {
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
+})
+
+// === BATCH CANVAS ===
+// Fake Chat iOS
+router.get('/fakechat', (req, res) => {
+  const nama = req.query.nama || 'Teman'
+  const pesan = needText(req, res, 'pesan'); if (!pesan) return
+  sendBinary(res, () => fakeChatGen(nama, pesan), 'image/png')
+})
+// Fake Call
+router.get('/fakecall', (req, res) => {
+  const nama = needText(req, res, 'nama'); if (!nama) return
+  const durasi = req.query.durasi || '00:00'
+  sendBinary(res, () => fakeCallGen(nama, durasi), 'image/png')
+})
+// Fake DANA / OVO
+router.get('/fakedana', (req, res) => {
+  const nama = needText(req, res, 'nama'); if (!nama) return
+  const nominal = req.query.nominal || '100000'
+  sendBinary(res, () => fakeDanaGen(nama, nominal), 'image/png')
+})
+router.get('/fakeovo', (req, res) => {
+  const nama = needText(req, res, 'nama'); if (!nama) return
+  const nominal = req.query.nominal || '100000'
+  sendBinary(res, () => fakeOvoGen(nama, nominal), 'image/png')
+})
+// Quote variants
+router.get('/qcwa', (req, res) => {
+  const text = needText(req, res); if (!text) return
+  sendBinary(res, () => qcwaGen(text, req.query.author), 'image/png')
+})
+router.get('/ttqc', (req, res) => {
+  const text = needText(req, res); if (!text) return
+  sendBinary(res, () => ttqcGen(text, req.query.author), 'image/png')
+})
+router.get('/igqc', (req, res) => {
+  const text = needText(req, res); if (!text) return
+  sendBinary(res, () => igqcGen(text, req.query.author), 'image/png')
+})
+router.get('/qcanime', (req, res) => {
+  const text = needText(req, res); if (!text) return
+  sendBinary(res, () => qcanimeGen(text, req.query.author), 'image/png')
+})
+// Kalender
+router.get('/kalender', (req, res) => {
+  sendBinary(res, () => kalenderGen(req.query.bulan, req.query.tahun), 'image/png')
+})
+// Fake FF / ML
+router.get('/fakeff', (req, res) => {
+  const nick = needText(req, res, 'nick'); if (!nick) return
+  sendBinary(res, () => fakeFfGen(nick, req.query.level), 'image/png')
+})
+router.get('/fakeml', (req, res) => {
+  const nick = needText(req, res, 'nick'); if (!nick) return
+  sendBinary(res, () => fakeMlGen(nick, req.query.rank), 'image/png')
 })
 
 export default router
