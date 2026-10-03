@@ -8,7 +8,6 @@ import { instagramDl } from '../lib/downloaders/instagram.js'
 import { capcutDl } from '../lib/downloaders/capcut.js'
 import { gdriveDl } from '../lib/downloaders/gdrive.js'
 import { ytSearch } from '../lib/downloaders/ytsearch.js'
-import { threadsDl } from '../lib/downloaders/threads.js'
 import { mediafireDl } from '../lib/downloaders/mediafire.js'
 import { spotifyDl } from '../lib/downloaders/spotify.js'
 
@@ -98,11 +97,6 @@ router.get('/ytsearch', (req, res) => {
   handle(res, () => ytSearch(q, limit))
 })
 
-// Threads
-router.get('/threads', (req, res) => {
-  const url = needUrl(req, res); if (!url) return
-  handle(res, () => threadsDl(url))
-})
 
 // MediaFire
 router.get('/mediafire', (req, res) => {
