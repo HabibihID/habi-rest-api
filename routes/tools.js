@@ -17,6 +17,7 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 import { writeFile, readFile, unlink } from 'fs/promises'
 import { skinToBlack } from '../lib/tools/skintoblack.js'
+import { blurImage, DEFAULT_BLUR_LEVEL, MAX_BLUR_LEVEL } from '../lib/tools/blur.js'
 import { uploadToCatbox } from '../lib/tools/tourl.js'
 import { ytTranscript } from '../lib/tools/yttranscript.js'
 import { ringkasArtikel } from '../lib/tools/ringkas.js'
@@ -197,6 +198,25 @@ router.post('/skintoblack',
     if (buf.length > MAX_IMG) return res.status(413).json({ status: false, message: 'Gambar maksimal 10 MB' })
     try {
       const out = await skinToBlack(buf)
+      res.type('image/png').send(out)
+    } catch (e) {
+      res.status(500).json({ status: false, message: e.message })
+    }
+  }
+)
+
+// ---- POST /api/blur — blur foto (Gaussian blur via sharp) ----
+// Terima raw binary image; route-level raw parser supaya tidak bergantung
+// pada wiring index.js. Query param: ?level=1-50 (default 15).
+router.post('/blur',
+  express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }),
+  async (req, res) => {
+    const buf = await readRawBody(req)
+    if (!buf) return res.status(400).json({ status: false, message: 'Kirim gambar sebagai raw body (Content-Type: image/*)' })
+    if (buf.length > MAX_IMG) return res.status(413).json({ status: false, message: 'Gambar maksimal 10 MB' })
+    const level = Math.min(MAX_BLUR_LEVEL, Math.max(1, parseInt(req.query.level, 10) || DEFAULT_BLUR_LEVEL))
+    try {
+      const out = await blurImage(buf, level)
       res.type('image/png').send(out)
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
