@@ -20,6 +20,7 @@ app.use(cors())
 app.use('/api/removebg', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
 app.use('/api/hd', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
 app.use('/api/skintoblack', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
+app.use('/api/tourl', express.raw({ type: ['image/*', 'video/*', 'audio/*', 'application/octet-stream'], limit: '200mb' }))
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 

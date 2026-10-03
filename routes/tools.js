@@ -14,6 +14,13 @@ import express from 'express'
 import sharp from 'sharp'
 import axios from 'axios'
 import { skinToBlack } from '../lib/tools/skintoblack.js'
+import { uploadToCatbox } from '../lib/tools/tourl.js'
+import { ytTranscript } from '../lib/tools/yttranscript.js'
+import { ringkasArtikel } from '../lib/tools/ringkas.js'
+import { cryptoPrice } from '../lib/tools/crypto.js'
+import { kurs } from '../lib/tools/kurs.js'
+import { animeInfo } from '../lib/tools/anime.js'
+import { ephoto, ephotoEffects } from '../lib/tools/ephoto.js'
 
 const router = Router()
 
@@ -192,5 +199,95 @@ router.post('/skintoblack',
     }
   }
 )
+
+// ---- Tourl: upload file -> link publik (catbox.moe) ----
+router.post('/tourl',
+  express.raw({ type: ['image/*', 'video/*', 'audio/*', 'application/octet-stream'], limit: '200mb' }),
+  async (req, res) => {
+    const buf = req.body
+    if (!Buffer.isBuffer(buf) || !buf.length) {
+      return res.status(400).json({ status: false, message: 'Kirim file sebagai raw body' })
+    }
+    try {
+      const ct = req.headers['content-type'] || 'application/octet-stream'
+      const url = await uploadToCatbox(buf, ct)
+      res.json({ status: true, url })
+    } catch (e) {
+      res.status(500).json({ status: false, message: e.message })
+    }
+  }
+)
+
+// ---- YouTube Transcript ----
+router.get('/yttranscript', async (req, res) => {
+  const url = req.query.url
+  if (!url) return res.status(400).json({ status: false, message: 'Parameter ?url= wajib diisi' })
+  try {
+    const data = await ytTranscript(url)
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Ringkas artikel ----
+router.get('/ringkas', async (req, res) => {
+  const url = req.query.url
+  if (!url) return res.status(400).json({ status: false, message: 'Parameter ?url= wajib diisi' })
+  try {
+    const data = await ringkasArtikel(url)
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Crypto ----
+router.get('/crypto', async (req, res) => {
+  const coin = req.query.coin
+  if (!coin) return res.status(400).json({ status: false, message: 'Parameter ?coin= wajib diisi. Contoh: ?coin=bitcoin' })
+  try {
+    const data = await cryptoPrice(coin)
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Kurs ----
+router.get('/kurs', async (req, res) => {
+  try {
+    const data = await kurs(req.query.from, req.query.to, req.query.amount)
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Anime ----
+router.get('/anime', async (req, res) => {
+  const q = req.query.q
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi. Contoh: ?q=naruto' })
+  try {
+    const data = await animeInfo(q)
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Ephoto ----
+router.get('/ephoto', async (req, res) => {
+  try {
+    const { buffer, mime } = await ephoto(req.query.effect, req.query.text)
+    res.type(mime).send(buffer)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+router.get('/ephoto/effects', (req, res) => {
+  res.json({ status: true, effects: ephotoEffects() })
+})
 
 export default router
