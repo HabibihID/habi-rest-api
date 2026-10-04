@@ -29,6 +29,9 @@ import { textToSpeech } from '../lib/tools/tts.js'
 import { githubInfo } from '../lib/tools/github.js'
 import { addWatermark } from '../lib/tools/watermark.js'
 import { extractPalette } from '../lib/tools/palette.js'
+import { dnsLookup } from '../lib/tools/dns.js'
+import { carbon } from '../lib/tools/carbon.js'
+import { speedtest } from '../lib/tools/speedtest.js'
 import { removeBg } from '../lib/tools/removebg.js'
 import { ephoto, ephotoEffects } from '../lib/tools/ephoto.js'
 import { enhanceVideo, MAX_VIDEO_SIZE as MAX_VIDEO } from '../lib/tools/hdvideo.js'
@@ -437,5 +440,40 @@ router.post('/hdvideo',
     }
   }
 )
+
+// ---- DNS lookup ----
+router.get('/dns', async (req, res) => {
+  const { domain, type = 'A' } = req.query
+  if (!domain) return res.status(400).json({ status: false, message: 'Parameter ?domain= wajib diisi' })
+  try {
+    const data = await dnsLookup(domain, type)
+    res.json({ status: true, domain, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Carbon: kode jadi gambar ----
+router.get('/carbon', async (req, res) => {
+  const { code } = req.query
+  if (!code) return res.status(400).json({ status: false, message: 'Parameter ?code= wajib diisi' })
+  try {
+    const buf = await carbon(code)
+    res.set('Content-Type', 'image/png')
+    res.send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Speedtest ----
+router.get('/speedtest', async (req, res) => {
+  try {
+    const data = await speedtest()
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
 
 export default router
