@@ -39,7 +39,7 @@ function resetDailyIfNeeded() {
     apiStats.byEndpoint = {}
   }
 }
-app.use('/api', (req, res, next) => {
+function trackApiStats(req, res, next) {
   resetDailyIfNeeded()
   apiStats.total++
   apiStats.today++
@@ -50,7 +50,7 @@ app.use('/api', (req, res, next) => {
     broadcastTimer = setTimeout(() => { broadcastTimer = null; broadcastStats() }, 1000)
   }
   next()
-})
+}
 
 // Statistik publik (tanpa auth, buat website)
 app.get('/stats', (req, res) => {
@@ -97,8 +97,8 @@ app.get('/health', (req, res) => {
   res.json({ status: true, message: 'HABI REST API jalan!', time: new Date().toISOString() })
 })
 
-// Semua /api/* butuh API key
-app.use('/api', authMiddleware)
+// Semua /api/* butuh API key — stats hanya hitung request yang lolos auth
+app.use('/api', authMiddleware, trackApiStats)
 app.use('/api', downloadRoutes)
 app.use('/api', generatorRoutes)
 app.use('/api', toolsRoutes)
