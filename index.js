@@ -45,6 +45,10 @@ app.use('/api', (req, res, next) => {
   apiStats.today++
   const ep = req.path.split('?')[0]
   apiStats.byEndpoint[ep] = (apiStats.byEndpoint[ep] || 0) + 1
+  // Broadcast ke SSE clients (throttle 1 detik)
+  if (!broadcastTimer) {
+    broadcastTimer = setTimeout(() => { broadcastTimer = null; broadcastStats() }, 1000)
+  }
   next()
 })
 
@@ -57,6 +61,36 @@ app.get('/stats', (req, res) => {
     .map(([endpoint, hits]) => ({ endpoint, hits }))
   res.json({ status: true, total: apiStats.total, today: apiStats.today, top })
 })
+
+// SSE real-time stats
+const sseClients = new Set()
+app.get('/stats/stream', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+  })
+  sseClients.add(res)
+  // Kirim data langsung pas connect
+  sendStatsTo(res)
+  req.on('close', () => sseClients.delete(res))
+})
+function sendStatsTo(res) {
+  resetDailyIfNeeded()
+  const top = Object.entries(apiStats.byEndpoint)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([endpoint, hits]) => ({ endpoint, hits }))
+  res.write(`data: ${JSON.stringify({ total: apiStats.total, today: apiStats.today, top })}\n\n`)
+}
+function broadcastStats() {
+  for (const res of sseClients) {
+    try { sendStatsTo(res) } catch { sseClients.delete(res) }
+  }
+}
+// Broadcast tiap ada request baru (throttle 1 detik)
+let broadcastTimer = null
+const _origNext = null
 
 // Health check (tanpa auth)
 app.get('/health', (req, res) => {

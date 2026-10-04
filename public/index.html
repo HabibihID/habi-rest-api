@@ -165,24 +165,32 @@ async function checkStatus(path, id) {
 
 render();
 
-// Load statistik
-async function loadStats() {
-  try {
-    const r = await fetch('/stats')
-    const d = await r.json()
-    if (d.status) {
-      document.getElementById('stat-today').textContent = d.today.toLocaleString('id-ID')
-      document.getElementById('stat-total').textContent = d.total.toLocaleString('id-ID')
-      const top = document.getElementById('stat-top')
-      if (d.top.length) {
-        top.innerHTML = '<b>🔥 Endpoint terpopuler:</b><br>' +
-          d.top.map((t, i) => `${i+1}. <code>${t.endpoint}</code> — ${t.hits}x`).join('<br>')
-      }
-    }
-  } catch {}
+// Load statistik via SSE (real-time)
+function updateStatsUI(d) {
+  document.getElementById('stat-today').textContent = d.today.toLocaleString('id-ID')
+  document.getElementById('stat-total').textContent = d.total.toLocaleString('id-ID')
+  const top = document.getElementById('stat-top')
+  if (d.top.length) {
+    top.innerHTML = '<b>🔥 Endpoint terpopuler:</b><br>' +
+      d.top.map((t, i) => `${i+1}. <code>${t.endpoint}</code> — ${t.hits}x`).join('<br>')
+  }
 }
-loadStats()
-setInterval(loadStats, 30000)
+try {
+  const es = new EventSource('/stats/stream')
+  es.onmessage = (e) => {
+    try { updateStatsUI(JSON.parse(e.data)) } catch {}
+  }
+  es.onerror = () => { /* auto-reconnect by browser */ }
+} catch {
+  // Fallback: polling 5 detik kalau SSE gagal
+  setInterval(async () => {
+    try {
+      const r = await fetch('/stats')
+      const d = await r.json()
+      if (d.status) updateStatsUI(d)
+    } catch {}
+  }, 5000)
+}
 </script>
 </body>
 </html>
