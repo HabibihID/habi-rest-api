@@ -46,7 +46,16 @@ code{background:#2d2d44;padding:.15rem .4rem;border-radius:4px;font-size:.85em}
 </div>
 <input id="apikey-input" type="text" placeholder="Masukkan API Key untuk test...">
 </header>
-<main id="docs"></main>
+<main>
+<div class="card">
+<h2>📊 Statistik Penggunaan</h2>
+<div class="stats" style="justify-content:flex-start">
+<div class="stat"><b id="stat-today">-</b> Request Hari Ini</div>
+<div class="stat"><b id="stat-total">-</b> Total Request</div>
+</div>
+<div id="stat-top" style="margin-top:1rem;font-size:.85rem;color:#9ca3af"></div>
+</div>
+<div id="docs"></div></main>
 <footer>
 <div style="margin-bottom:1rem">
 <a href="https://wa.me/6285181576338" target="_blank" style="display:inline-block;background:#25d366;color:#fff;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;margin:.25rem;font-weight:600">💬 WhatsApp</a>
@@ -155,6 +164,25 @@ async function checkStatus(path, id) {
 }
 
 render();
+
+// Load statistik
+async function loadStats() {
+  try {
+    const r = await fetch('/stats')
+    const d = await r.json()
+    if (d.status) {
+      document.getElementById('stat-today').textContent = d.today.toLocaleString('id-ID')
+      document.getElementById('stat-total').textContent = d.total.toLocaleString('id-ID')
+      const top = document.getElementById('stat-top')
+      if (d.top.length) {
+        top.innerHTML = '<b>🔥 Endpoint terpopuler:</b><br>' +
+          d.top.map((t, i) => `${i+1}. <code>${t.endpoint}</code> — ${t.hits}x`).join('<br>')
+      }
+    }
+  } catch {}
+}
+loadStats()
+setInterval(loadStats, 30000)
 </script>
 </body>
 </html>

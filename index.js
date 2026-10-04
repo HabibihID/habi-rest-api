@@ -24,6 +24,40 @@ app.use('/api/tourl', express.raw({ type: ['image/*', 'video/*', 'audio/*', 'app
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
+// ---- Statistik penggunaan API (in-memory) ----
+const apiStats = {
+  total: 0,
+  today: 0,
+  todayDate: new Date().toISOString().slice(0, 10),
+  byEndpoint: {},
+}
+function resetDailyIfNeeded() {
+  const today = new Date().toISOString().slice(0, 10)
+  if (apiStats.todayDate !== today) {
+    apiStats.todayDate = today
+    apiStats.today = 0
+    apiStats.byEndpoint = {}
+  }
+}
+app.use('/api', (req, res, next) => {
+  resetDailyIfNeeded()
+  apiStats.total++
+  apiStats.today++
+  const ep = req.path.split('?')[0]
+  apiStats.byEndpoint[ep] = (apiStats.byEndpoint[ep] || 0) + 1
+  next()
+})
+
+// Statistik publik (tanpa auth, buat website)
+app.get('/stats', (req, res) => {
+  resetDailyIfNeeded()
+  const top = Object.entries(apiStats.byEndpoint)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([endpoint, hits]) => ({ endpoint, hits }))
+  res.json({ status: true, total: apiStats.total, today: apiStats.today, top })
+})
+
 // Health check (tanpa auth)
 app.get('/health', (req, res) => {
   res.json({ status: true, message: 'HABI REST API jalan!', time: new Date().toISOString() })
