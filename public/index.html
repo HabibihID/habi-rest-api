@@ -110,6 +110,11 @@ const CATEGORIES = {
     {path:"/api/anime", params:"q=naruto&apikey=KEY", desc:"Info anime"},
     {path:"/api/ephoto", params:"text=Halo&apikey=KEY", desc:"Ephoto effect"},
     {path:"/api/blur", params:"url=LINK_GAMBAR&apikey=KEY", desc:"Blur gambar"},
+    {path:"/api/ocr", params:"(POST gambar)&apikey=KEY", desc:"Baca teks dari gambar", method:"POST"},
+    {path:"/api/tts", params:"text=Halo&lang=id&apikey=KEY", desc:"Teks jadi suara (MP3)"},
+    {path:"/api/github", params:"username=torvalds&apikey=KEY", desc:"Info profil GitHub"},
+    {path:"/api/watermark", params:"url=LINK_GAMBAR&text=HABI&apikey=KEY", desc:"Watermark gambar"},
+    {path:"/api/palette", params:"url=LINK_GAMBAR&apikey=KEY", desc:"Warna dominan gambar"},
   ],
   "☪️ Islami": [
     {path:"/api/kisahnabi", params:"nabi=muhammad&apikey=KEY", desc:"Kisah nabi"},
