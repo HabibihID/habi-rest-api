@@ -25,6 +25,10 @@ import { cryptoPrice } from '../lib/tools/crypto.js'
 import { kurs } from '../lib/tools/kurs.js'
 import { animeInfo } from '../lib/tools/anime.js'
 import { ocrFromUrl } from '../lib/tools/ocr.js'
+import { textToSpeech } from '../lib/tools/tts.js'
+import { githubInfo } from '../lib/tools/github.js'
+import { addWatermark } from '../lib/tools/watermark.js'
+import { extractPalette } from '../lib/tools/palette.js'
 import { removeBg } from '../lib/tools/removebg.js'
 import { ephoto, ephotoEffects } from '../lib/tools/ephoto.js'
 import { enhanceVideo, MAX_VIDEO_SIZE as MAX_VIDEO } from '../lib/tools/hdvideo.js'
@@ -251,6 +255,56 @@ router.get('/yttranscript', async (req, res) => {
   try {
     const data = await ytTranscript(url)
     res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- TTS ----
+router.get('/tts', async (req, res) => {
+  const { text, lang = 'id' } = req.query
+  if (!text) return res.status(400).json({ status: false, message: 'Parameter ?text= wajib diisi' })
+  try {
+    const buf = await textToSpeech(text, lang)
+    res.set('Content-Type', 'audio/mpeg')
+    res.send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- GitHub info ----
+router.get('/github', async (req, res) => {
+  const { username } = req.query
+  if (!username) return res.status(400).json({ status: false, message: 'Parameter ?username= wajib diisi' })
+  try {
+    const data = await githubInfo(username)
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Watermark ----
+router.get('/watermark', async (req, res) => {
+  const { url, text } = req.query
+  if (!url || !text) return res.status(400).json({ status: false, message: 'Parameter ?url= & ?text= wajib diisi' })
+  try {
+    const buf = await addWatermark(url, text)
+    res.set('Content-Type', 'image/jpeg')
+    res.send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Palette ----
+router.get('/palette', async (req, res) => {
+  const { url, count = '5' } = req.query
+  if (!url) return res.status(400).json({ status: false, message: 'Parameter ?url= wajib diisi' })
+  try {
+    const colors = await extractPalette(url, count)
+    res.json({ status: true, colors })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
