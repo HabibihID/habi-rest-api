@@ -70,6 +70,10 @@ const CATEGORIES = {
     {path:"/api/text2img", params:"text=kucing&apikey=KEY", desc:"Text to Image (Flux)"},
     {path:"/api/bluearchive", params:"apikey=KEY", desc:"Blue Archive image (Safebooru)"},
     {path:"/api/randompap", params:"apikey=KEY", desc:"Random wallpaper"},
+    {path:"/api/stt", params:"(POST audio)&apikey=KEY", desc:"Suara jadi teks (Whisper)", method:"POST"},
+    {path:"/api/sentiment", params:"text=I+love+this&apikey=KEY", desc:"Analisa sentimen"},
+    {path:"/api/imgclass", params:"(POST gambar)&apikey=KEY", desc:"Tebak isi gambar", method:"POST"},
+    {path:"/api/translate", params:"text=Hello&from=english&to=indonesian&apikey=KEY", desc:"Translate AI"},
   ],
   "📥 Downloader": [
     {path:"/api/tiktok", params:"url=LINK&apikey=KEY", desc:"TikTok video HD no watermark"},
