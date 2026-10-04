@@ -268,6 +268,21 @@ router.get('/ocr', async (req, res) => {
   }
 })
 
+// ---- OCR via upload langsung (POST raw image) ----
+router.post('/ocr', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '20mb' }), async (req, res) => {
+  const buf = req.body
+  if (!Buffer.isBuffer(buf) || buf.length < 100) {
+    return res.status(400).json({ status: false, message: 'Kirim gambar sebagai raw body' })
+  }
+  try {
+    const { ocrFromBuffer } = await import('../lib/tools/ocr.js')
+    const text = await ocrFromBuffer(buf)
+    res.json({ status: true, text })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
 // ---- Ringkas artikel ----
 router.get('/ringkas', async (req, res) => {
   const url = req.query.url
