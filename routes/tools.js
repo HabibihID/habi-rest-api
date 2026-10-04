@@ -24,6 +24,7 @@ import { ringkasArtikel } from '../lib/tools/ringkas.js'
 import { cryptoPrice } from '../lib/tools/crypto.js'
 import { kurs } from '../lib/tools/kurs.js'
 import { animeInfo } from '../lib/tools/anime.js'
+import { ocrFromUrl } from '../lib/tools/ocr.js'
 import { removeBg } from '../lib/tools/removebg.js'
 import { ephoto, ephotoEffects } from '../lib/tools/ephoto.js'
 import { enhanceVideo, MAX_VIDEO_SIZE as MAX_VIDEO } from '../lib/tools/hdvideo.js'
@@ -250,6 +251,18 @@ router.get('/yttranscript', async (req, res) => {
   try {
     const data = await ytTranscript(url)
     res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- OCR ----
+router.get('/ocr', async (req, res) => {
+  const url = req.query.url
+  if (!url) return res.status(400).json({ status: false, message: 'Parameter ?url= wajib diisi' })
+  try {
+    const text = await ocrFromUrl(url)
+    res.json({ status: true, text })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
