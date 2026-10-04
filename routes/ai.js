@@ -16,6 +16,17 @@ import { Router } from 'express'
 import { chatAi, text2img } from '../lib/ai/ai.js'
 
 const router = Router()
+const PROXY_BASE = 'https://proxy.servercloud.my.id/proxy'
+
+async function fetchWithTimeout(url, opts = {}, ms) {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), ms)
+  try {
+    return await fetch(url, { ...opts, signal: c.signal })
+  } finally {
+    clearTimeout(t)
+  }
+}
 
 function needPrompt(req, res) {
   const p = req.query.prompt
@@ -100,6 +111,78 @@ router.get('/randompap', async (req, res) => {
     const buf = await fetchBinary('https://picsum.photos/800', 60000)
     if (!buf.length) throw new Error('Gambar kosong.')
     res.type('image/jpeg').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- STT: suara jadi teks (Whisper) ----
+router.post('/stt', async (req, res) => {
+  try {
+    const chunks = []
+    for await (const c of req) chunks.push(c)
+    const buf = Buffer.concat(chunks)
+    if (buf.length < 100) return res.status(400).json({ status: false, message: 'Kirim audio sebagai body' })
+    const r = await fetchWithTimeout(`${PROXY_BASE}?target=whisper`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'audio/mpeg' },
+      body: buf,
+    }, 60000)
+    const j = await r.json()
+    if (!j.status) throw new Error(j.message)
+    res.json({ status: true, text: j.text })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Sentiment: analisa sentimen teks ----
+router.get('/sentiment', async (req, res) => {
+  const text = req.query.text
+  if (!text) return res.status(400).json({ status: false, message: 'Parameter ?text= wajib diisi' })
+  try {
+    const r = await fetchWithTimeout(`${PROXY_BASE}?target=sentiment&text=${encodeURIComponent(text)}`, {}, 30000)
+    const j = await r.json()
+    if (!j.status) throw new Error(j.message)
+    const top = j.result.sort((a, b) => b.score - a.score)[0]
+    res.json({ status: true, label: top.label, score: top.score, all: j.result })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- ImgClass: tebak isi gambar ----
+router.post('/imgclass', async (req, res) => {
+  try {
+    const chunks = []
+    for await (const c of req) chunks.push(c)
+    const buf = Buffer.concat(chunks)
+    if (buf.length < 100) return res.status(400).json({ status: false, message: 'Kirim gambar sebagai body' })
+    const r = await fetchWithTimeout(`${PROXY_BASE}?target=imgclass`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/jpeg' },
+      body: buf,
+    }, 60000)
+    const j = await r.json()
+    if (!j.status) throw new Error(j.message)
+    res.json({ status: true, result: j.result })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Translate AI ----
+router.get('/translate', async (req, res) => {
+  const { text, from = 'english', to = 'indonesian' } = req.query
+  if (!text) return res.status(400).json({ status: false, message: 'Parameter ?text= wajib diisi' })
+  try {
+    const r = await fetchWithTimeout(
+      `${PROXY_BASE}?target=translate&text=${encodeURIComponent(text)}&source=${from}&target_lang=${to}`,
+      {}, 30000
+    )
+    const j = await r.json()
+    if (!j.status) throw new Error(j.message)
+    res.json({ status: true, result: j.result })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
