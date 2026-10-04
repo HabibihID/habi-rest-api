@@ -3,73 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HABI REST API</title>
+<title>HABI REST API — Dokumentasi</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh}
-header{background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:3rem 1rem;text-align:center}
-header h1{font-size:2.5rem;margin-bottom:.5rem}
+header{background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:2.5rem 1rem;text-align:center}
+header h1{font-size:2.2rem;margin-bottom:.5rem}
 header p{opacity:.85}
-main{max-width:900px;margin:0 auto;padding:2rem 1rem}
-.card{background:#1a1a2e;border:1px solid #2d2d44;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+.stats{display:flex;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,.1);padding:.5rem 1rem;border-radius:8px;font-size:.9rem}
+.stat b{font-size:1.2rem}
+main{max-width:1000px;margin:0 auto;padding:2rem 1rem}
+.card{background:#1a1a2e;border:1px solid #2d2d44;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
 .card h2{color:#a78bfa;margin-bottom:1rem;font-size:1.2rem}
-.endpoint{background:#12121f;border-radius:8px;padding:1rem;margin-bottom:.75rem;font-family:monospace;font-size:.85rem}
-.method{display:inline-block;background:#10b981;color:#fff;padding:.15rem .6rem;border-radius:4px;font-weight:700;margin-right:.5rem}
+.endpoint{background:#12121f;border-radius:8px;padding:1rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:.75rem}
+.ep-info{flex:1;font-family:monospace;font-size:.85rem}
+.method{display:inline-block;background:#10b981;color:#fff;padding:.15rem .6rem;border-radius:4px;font-weight:700;margin-right:.5rem;font-size:.75rem}
+.method.post{background:#f59e0b}
 .url{color:#7dd3fc;word-break:break-all}
 .desc{color:#9ca3af;margin-top:.5rem;font-family:'Segoe UI',sans-serif;font-size:.85rem}
 .param{color:#fbbf24}
+.status{width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;background:#6b7280}
+.status.ok{background:#10b981;box-shadow:0 0 8px #10b981}
+.status.err{background:#ef4444;box-shadow:0 0 8px #ef4444}
+.status.checking{background:#f59e0b;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.4}}
+.try-btn{background:#4f46e5;color:#fff;border:none;padding:.4rem .8rem;border-radius:6px;cursor:pointer;font-size:.8rem;margin-top:.5rem}
+.try-btn:hover{background:#6366f1}
 footer{text-align:center;padding:2rem;color:#6b7280;font-size:.85rem}
 code{background:#2d2d44;padding:.15rem .4rem;border-radius:4px;font-size:.85em}
+#apikey-input{background:#12121f;border:1px solid #2d2d44;color:#fff;padding:.5rem 1rem;border-radius:8px;width:300px;margin-top:1rem;font-family:monospace}
 </style>
 </head>
 <body>
 <header>
 <h1>🚀 HABI REST API</h1>
-<p>Downloader API untuk bot HABI AI</p>
+<p>Dokumentasi & Status Endpoint</p>
+<div class="stats">
+<div class="stat"><b id="total-ep">0</b> Endpoint</div>
+<div class="stat"><b id="ok-ep" style="color:#10b981">0</b> Online</div>
+<div class="stat"><b id="err-ep" style="color:#ef4444">0</b> Offline</div>
+</div>
+<input id="apikey-input" type="text" placeholder="Masukkan API Key untuk test...">
 </header>
-<main>
-<div class="card">
-<h2>🔑 Autentikasi</h2>
-<p>Semua endpoint butuh API key. Kirim via query <code>?apikey=KEY</code> atau header <code>X-API-Key</code>.</p>
-</div>
-<div class="card">
-<h2>📥 Downloader Endpoints</h2>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/tiktok?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">TikTok video HD no watermark + info</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/tiktokaudio?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">TikTok audio saja (MP3)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/facebook?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Facebook video (HD/SD)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/youtube?url=<span class="param">LINK</span>&type=<span class="param">mp3|mp4</span>&apikey=<span class="param">KEY</span></span><div class="desc">YouTube MP3 atau MP4</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/instagram?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Instagram post/reel</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/twitter?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Twitter/X video & gambar</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/pinterest?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Pinterest foto & video</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/capcut?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">CapCut template/video</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/gdrive?url=<span class="param">LINK</span>&apikey=<span class="param">KEY</span></span><div class="desc">Google Drive direct link</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/ytsearch?q=<span class="param">KATA KUNCI</span>&apikey=<span class="param">KEY</span></span><div class="desc">YouTube search (return JSON)</div></div>
-</div>
-<div class="card">
-<h2>🎨 Generator Endpoints</h2>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/brat?text=<span class="param">TEKS</span>&apikey=<span class="param">KEY</span></span><div class="desc">Brat text → gambar (langsung return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/bratvid?text=<span class="param">TEKS</span>&apikey=<span class="param">KEY</span></span><div class="desc">Brat text → video (langsung return MP4)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/iqc?text=<span class="param">TEKS</span>&apikey=<span class="param">KEY</span></span><div class="desc">iPhone Quote Card (langsung return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/qrcode?text=<span class="param">TEKS</span>&apikey=<span class="param">KEY</span></span><div class="desc">QR Code generator (langsung return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/ssweb?url=<span class="param">URL</span>&apikey=<span class="param">KEY</span></span><div class="desc">Screenshot website (langsung return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/shortlink?url=<span class="param">URL</span>&apikey=<span class="param">KEY</span></span><div class="desc">Shortlink URL (return JSON)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/meme/<span class="param">TEMPLATE</span>?atas=<span class="param">TEKS</span>&bawah=<span class="param">TEKS</span>&apikey=<span class="param">KEY</span></span><div class="desc">Meme generator (drake, doge, distracted, dll — return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/translate?text=<span class="param">TEKS</span>&to=<span class="param">id</span>&apikey=<span class="param">KEY</span></span><div class="desc">Translate (return JSON)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/fakech?nama=<span class="param">NAMA</span>&pengikut=<span class="param">JML</span>&jam=<span class="param">JAM</span>&apikey=<span class="param">KEY</span></span><div class="desc">Fake Channel iOS (return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/fakegc?nama=<span class="param">NAMA</span>&anggota=<span class="param">JML</span>&apikey=<span class="param">KEY</span></span><div class="desc">Fake Group iOS (return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/fakecall?nama=<span class="param">NAMA</span>&apikey=<span class="param">KEY</span></span><div class="desc">Fake call screen (return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/fakedana?nama=<span class="param">NAMA</span>&nominal=<span class="param">NOMINAL</span>&apikey=<span class="param">KEY</span></span><div class="desc">Fake DANA transfer (return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/fakeovo?nama=<span class="param">NAMA</span>&nominal=<span class="param">NOMINAL</span>&apikey=<span class="param">KEY</span></span><div class="desc">Fake OVO transfer (return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/igqc?text=<span class="param">TEKS</span>&apikey=<span class="param">KEY</span></span><div class="desc">Quote Instagram style (return PNG)</div></div>
-<div class="endpoint"><span class="method">GET</span><span class="url">/api/kalender?apikey=<span class="param">KEY</span></span><div class="desc">Kalender (return PNG)</div></div>
-<div class="endpoint"><span class="method">POST</span><span class="url">/api/removebg?apikey=<span class="param">KEY</span></span><div class="desc">Hapus background foto — kirim gambar sebagai raw body image/* (return PNG)</div></div>
-<div class="endpoint"><span class="method">POST</span><span class="url">/api/hd?apikey=<span class="param">KEY</span></span><div class="desc">Jernihkan/upscale foto — kirim gambar sebagai raw body image/* (return JPEG)</div></div>
-</div>
-<div class="card">
-<h2>ℹ️ Info</h2>
-<div class="endpoint"><span class="method">GET</span><span class="url">/health</span><div class="desc">Cek status server (tanpa API key)</div></div>
-</div>
-</main>
-<footer>HABI REST API v1.0 • by Habibih Official ID</footer>
+<main id="docs"></main>
+<footer>> © Habibih Cloud ID</footer>
+<script>
+const CATEGORIES = {
+  "🤖 AI": [
+    {path:"/api/ai", params:"text=Halo&apikey=KEY", desc:"Chat AI (Cloudflare Workers AI)"},
+    {path:"/api/text2img", params:"text=kucing&apikey=KEY", desc:"Text to Image (Flux)"},
+    {path:"/api/bluearchive", params:"apikey=KEY", desc:"Blue Archive image (Safebooru)"},
+    {path:"/api/randompap", params:"apikey=KEY", desc:"Random wallpaper"},
+  ],
+  "📥 Downloader": [
+    {path:"/api/tiktok", params:"url=LINK&apikey=KEY", desc:"TikTok video HD no watermark"},
+    {path:"/api/tiktokaudio", params:"url=LINK&apikey=KEY", desc:"TikTok audio MP3"},
+    {path:"/api/facebook", params:"url=LINK&apikey=KEY", desc:"Facebook video"},
+    {path:"/api/youtube", params:"url=LINK&type=mp3&apikey=KEY", desc:"YouTube MP3/MP4"},
+    {path:"/api/instagram", params:"url=LINK&apikey=KEY", desc:"Instagram post/reel"},
+    {path:"/api/twitter", params:"url=LINK&apikey=KEY", desc:"Twitter/X media"},
+    {path:"/api/pinterest", params:"url=LINK&apikey=KEY", desc:"Pinterest media"},
+    {path:"/api/capcut", params:"url=LINK&apikey=KEY", desc:"CapCut template"},
+    {path:"/api/aio", params:"url=LINK&apikey=KEY", desc:"All-in-one downloader"},
+    {path:"/api/ytsearch", params:"q=kucing&apikey=KEY", desc:"YouTube search"},
+  ],
+  "🎨 Generator": [
+    {path:"/api/brat", params:"text=Halo&apikey=KEY", desc:"Brat text → PNG"},
+    {path:"/api/bratvid", params:"text=Halo&apikey=KEY", desc:"Brat video → MP4"},
+    {path:"/api/iqc", params:"text=Halo&apikey=KEY", desc:"iPhone Quote Card"},
+    {path:"/api/iqc2", params:"text=Halo&apikey=KEY", desc:"Pink iPhone Quote Card"},
+    {path:"/api/qrcode", params:"text=Halo&apikey=KEY", desc:"QR Code generator"},
+    {path:"/api/ssweb", params:"url=https://google.com&apikey=KEY", desc:"Screenshot website"},
+    {path:"/api/fakech", params:"text=Halo&apikey=KEY", desc:"Fake iOS chat"},
+    {path:"/api/fakegc", params:"text=Halo&apikey=KEY", desc:"Fake group chat"},
+  ],
+  "🎮 Games": [
+    {path:"/api/tebakbendera", params:"apikey=KEY", desc:"Tebak bendera"},
+    {path:"/api/tebaklogo", params:"apikey=KEY", desc:"Tebak logo"},
+    {path:"/api/caklontong", params:"apikey=KEY", desc:"Cak lontong"},
+    {path:"/api/tebakkata", params:"apikey=KEY", desc:"Tebak kata"},
+  ],
+  "🛠️ Tools": [
+    {path:"/api/tourl", params:"(POST)&apikey=KEY", desc:"Upload file → URL", method:"POST"},
+    {path:"/api/removebg", params:"url=LINK_GAMBAR&apikey=KEY", desc:"Hapus background"},
+    {path:"/api/translate", params:"text=Hello&to=id&apikey=KEY", desc:"Translate teks"},
+    {path:"/api/shortlink", params:"url=https://google.com&apikey=KEY", desc:"Perpendek URL"},
+    {path:"/api/yttranscript", params:"url=LINK&apikey=KEY", desc:"YouTube transcript"},
+    {path:"/api/crypto", params:"coin=bitcoin&apikey=KEY", desc:"Harga crypto"},
+    {path:"/api/kurs", params:"from=USD&to=IDR&apikey=KEY", desc:"Kurs mata uang"},
+    {path:"/api/anime", params:"q=naruto&apikey=KEY", desc:"Info anime"},
+    {path:"/api/ephoto", params:"text=Halo&apikey=KEY", desc:"Ephoto effect"},
+    {path:"/api/blur", params:"url=LINK_GAMBAR&apikey=KEY", desc:"Blur gambar"},
+  ],
+  "☪️ Islami": [
+    {path:"/api/kisahnabi", params:"nabi=muhammad&apikey=KEY", desc:"Kisah nabi"},
+  ],
+};
+
+let totalOk = 0, totalErr = 0;
+
+function render() {
+  const main = document.getElementById('docs');
+  let total = 0;
+  for (const [cat, eps] of Object.entries(CATEGORIES)) {
+    total += eps.length;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<h2>${cat} (${eps.length})</h2>`;
+    eps.forEach((ep, i) => {
+      const id = `st${cat}${i}`.replace(/[^a-z0-9]/gi,'');
+      const div = document.createElement('div');
+      div.className = 'endpoint';
+      div.innerHTML =
+        '<div class="status checking" id="'+id+'"></div>' +
+        '<div class="ep-info">' +
+          '<span class="method '+(ep.method==='POST'?'post':'')+'">'+(ep.method||'GET')+'</span>' +
+          '<span class="url">'+ep.path+'?<span class="param">'+ep.params+'</span></span>' +
+          '<div class="desc">'+ep.desc+'</div>' +
+          '<button class="try-btn" data-p="'+ep.path+'" data-q="'+ep.params+'">▶ Test</button>' +
+        '</div>';
+      card.appendChild(div);
+      checkStatus(ep.path, id);
+    });
+    main.appendChild(card);
+  }
+  document.getElementById('total-ep').textContent = total;
+  main.querySelectorAll('.try-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const key = document.getElementById('apikey-input').value || 'KEY';
+      window.open(b.dataset.p + '?' + b.dataset.q.replace(/KEY/g, key), '_blank');
+    });
+  });
+}
+
+async function checkStatus(path, id) {
+  const el = document.getElementById(id);
+  try {
+    const r = await fetch(path, { method:'GET', signal: AbortSignal.timeout(10000) });
+    if (r.status === 401 || r.status === 400 || r.status === 200) { el.className='status ok'; totalOk++; }
+    else { el.className='status err'; totalErr++; }
+  } catch { el.className='status err'; totalErr++; }
+  document.getElementById('ok-ep').textContent = totalOk;
+  document.getElementById('err-ep').textContent = totalErr;
+}
+
+render();
+</script>
 </body>
 </html>
