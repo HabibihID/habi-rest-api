@@ -476,13 +476,13 @@ router.get('/speedtest', async (req, res) => {
   }
 })
 
-// ---- TikTok stalk ----
+// ---- TikTok stalk (via Cloudflare Worker proxy) ----
 router.get('/ttstalk', async (req, res) => {
   const username = (req.query.username || '').replace('@', '')
   if (!username) return res.status(400).json({ status: false, message: 'Parameter username wajib diisi' })
   try {
-    const r = await axios.get(`https://www.tikwm.com/api/user/info?unique_id=${encodeURIComponent(username)}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 15000,
+    const r = await axios.get(`https://proxy.servercloud.my.id/proxy/api/user/info?unique_id=${encodeURIComponent(username)}&target=tikwm`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 20000,
     })
     const u = r.data?.data?.user
     if (!u) throw new Error('User tidak ditemukan')
@@ -490,12 +490,12 @@ router.get('/ttstalk', async (req, res) => {
   } catch (e) { res.status(500).json({ status: false, message: e.message }) }
 })
 
-// ---- YouTube stalk ----
+// ---- YouTube stalk (via Cloudflare Worker proxy) ----
 router.get('/ytstalk', async (req, res) => {
   const q = req.query.q
   if (!q) return res.status(400).json({ status: false, message: 'Parameter q wajib diisi' })
   try {
-    const r = await axios.get(`https://yt.lemnoslife.com/noKey/channels?part=snippet,statistics&q=${encodeURIComponent(q)}`, { timeout: 15000 })
+    const r = await axios.get(`https://proxy.servercloud.my.id/proxy/noKey/channels?part=snippet,statistics&q=${encodeURIComponent(q)}&target=lemnos`, { timeout: 20000 })
     const ch = r.data?.items?.[0]
     if (!ch) throw new Error('Channel tidak ditemukan')
     res.json({ status: true, result: { title: ch.snippet.title, customUrl: ch.snippet.customUrl, description: ch.snippet.description, ...ch.statistics } })
