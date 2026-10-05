@@ -204,5 +204,13 @@ router.get('/cerita', aiGen((q) => `Buatkan cerita pendek yang menarik dalam Bah
 router.get('/puisi', aiGen((q) => `Buatkan puisi indah dalam Bahasa Indonesia tentang: ${q}. Maksimal 4 bait.`))
 router.get('/resep', aiGen((q) => `Berikan resep masakan ${q} dalam Bahasa Indonesia: bahan-bahan dan langkah-langkah yang jelas dan singkat.`))
 router.get('/itinerary', aiGen((q) => `Buatkan itinerary traveling ${q} dalam Bahasa Indonesia: destinasi per hari, estimasi biaya, dan tips. Singkat dan jelas.`))
+router.get('/sinopsis', aiGen((q) => `Buatkan sinopsis singkat dalam Bahasa Indonesia untuk: ${q}. Maksimal 150 kata, bikin penasaran.`))
+router.get('/caption', aiGen((q) => `Buatkan 3 caption Instagram yang aesthetic dalam Bahasa Indonesia untuk: ${q}. Singkat dan kekinian.`))
+router.get('/nama', aiGen((q) => `Berikan 10 ide nama yang bagus dalam Bahasa Indonesia untuk: ${q}. Kreatif dan unik.`))
+router.get('/curhat', aiGen((q) => `Kamu adalah teman curhat yang empati. Berikan respons yang hangat dan suportif dalam Bahasa Indonesia untuk: ${q}. Maksimal 100 kata.`))
+router.get('/motivasi', aiGen((q) => `Berikan kata-kata motivasi yang membakar semangat dalam Bahasa Indonesia tentang: ${q}. Maksimal 100 kata.`))
+router.get('/tebak', aiGen((q) => `Buatkan 1 tebak-tebakan lucu dalam Bahasa Indonesia tentang: ${q || 'random'}. Sertakan jawabannya.`))
+router.get('/roast', aiGen((q) => `Roasting yang kocak tapi tidak menyakitkan dalam Bahasa Indonesia untuk: ${q}. Maksimal 3 kalimat, tetap sopan.`))
+router.get('/pantunai', aiGen((q) => `Buatkan pantun 4 baris dalam Bahasa Indonesia tentang: ${q}. Lucu dan rima yang pas.`))
 
 export default router
