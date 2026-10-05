@@ -476,4 +476,51 @@ router.get('/speedtest', async (req, res) => {
   }
 })
 
+// ---- TikTok stalk ----
+router.get('/ttstalk', async (req, res) => {
+  const username = (req.query.username || '').replace('@', '')
+  if (!username) return res.status(400).json({ status: false, message: 'Parameter username wajib diisi' })
+  try {
+    const r = await axios.get(`https://www.tikwm.com/api/user/info?unique_id=${encodeURIComponent(username)}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 15000,
+    })
+    const u = r.data?.data?.user
+    if (!u) throw new Error('User tidak ditemukan')
+    res.json({ status: true, result: { nickname: u.nickname, username: u.uniqueId, verified: u.verified, signature: u.signature, ...r.data.data.stats } })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// ---- YouTube stalk ----
+router.get('/ytstalk', async (req, res) => {
+  const q = req.query.q
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter q wajib diisi' })
+  try {
+    const r = await axios.get(`https://yt.lemnoslife.com/noKey/channels?part=snippet,statistics&q=${encodeURIComponent(q)}`, { timeout: 15000 })
+    const ch = r.data?.items?.[0]
+    if (!ch) throw new Error('Channel tidak ditemukan')
+    res.json({ status: true, result: { title: ch.snippet.title, customUrl: ch.snippet.customUrl, description: ch.snippet.description, ...ch.statistics } })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// ---- Wallpaper HD ----
+router.get('/wallpaper', async (req, res) => {
+  try {
+    const seed = Math.floor(Math.random() * 10000)
+    const r = await axios.get(`https://picsum.photos/seed/${seed}/1080/1920`, { responseType: 'arraybuffer', timeout: 20000 })
+    res.set('Content-Type', 'image/jpeg')
+    res.send(Buffer.from(r.data))
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// ---- Emoji mix ----
+router.get('/emojimix', async (req, res) => {
+  const { e1, e2 } = req.query
+  if (!e1 || !e2) return res.status(400).json({ status: false, message: 'Parameter e1 & e2 wajib diisi' })
+  try {
+    const r = await axios.get(`https://emojik.vercel.app/s/${encodeURIComponent(e1)}_${encodeURIComponent(e2)}?size=512`, { responseType: 'arraybuffer', timeout: 15000 })
+    res.set('Content-Type', 'image/png')
+    res.send(Buffer.from(r.data))
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
 export default router

@@ -188,4 +188,21 @@ router.get('/translate', async (req, res) => {
   }
 })
 
+// ---- AI generators ----
+const aiGen = (promptBuilder) => async (req, res) => {
+  const q = req.query.q || req.query.text
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter q wajib diisi' })
+  try {
+    const result = await chatAi(promptBuilder(q))
+    res.json({ status: true, result })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+}
+
+router.get('/cerita', aiGen((q) => `Buatkan cerita pendek yang menarik dalam Bahasa Indonesia tentang: ${q}. Maksimal 300 kata.`))
+router.get('/puisi', aiGen((q) => `Buatkan puisi indah dalam Bahasa Indonesia tentang: ${q}. Maksimal 4 bait.`))
+router.get('/resep', aiGen((q) => `Berikan resep masakan ${q} dalam Bahasa Indonesia: bahan-bahan dan langkah-langkah yang jelas dan singkat.`))
+router.get('/itinerary', aiGen((q) => `Buatkan itinerary traveling ${q} dalam Bahasa Indonesia: destinasi per hari, estimasi biaya, dan tips. Singkat dan jelas.`))
+
 export default router
