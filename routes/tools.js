@@ -497,4 +497,75 @@ router.get('/emojimix', async (req, res) => {
   } catch (e) { res.status(500).json({ status: false, message: e.message }) }
 })
 
+// ---- Wasted meme (GTA style) ----
+router.post('/wasted', express.raw({ type: 'image/*', limit: '10mb' }), async (req, res) => {
+  try {
+    if (!req.body || !req.body.length) return res.status(400).json({ status: false, message: 'Kirim gambar' })
+    const text = (req.query.text || 'wasted').toString().slice(0, 20)
+    const img = sharp(req.body)
+    const meta = await img.metadata()
+    const w = meta.width || 500, h = meta.height || 500
+
+    // Grayscale + darken
+    const gray = await img.grayscale().modulate({ brightness: 0.65 }).toBuffer()
+
+    // Gray bar + text via SVG
+    const barH = Math.round(h * 0.18)
+    const barY = Math.round((h - barH) / 2)
+    const fontSize = Math.round(barH * 0.6)
+    const svg = `<svg width="${w}" height="${h}">
+      <rect x="0" y="${barY}" width="${w}" height="${barH}" fill="#505050" fill-opacity="0.9"/>
+      <text x="${w/2}" y="${barY + barH/2 + fontSize*0.35}" font-family="sans-serif" font-weight="bold" font-size="${fontSize}" fill="#b42828" stroke="black" stroke-width="4" text-anchor="middle">${text.replace(/[<>&]/g, '')}</text>
+    </svg>`
+
+    const out = await sharp(gray).composite([{ input: Buffer.from(svg), top: 0, left: 0 }]).jpeg().toBuffer()
+    res.set('Content-Type', 'image/jpeg')
+    res.send(out)
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// ---- Wanted poster ----
+router.post('/wanted', express.raw({ type: 'image/*', limit: '10mb' }), async (req, res) => {
+  try {
+    if (!req.body || !req.body.length) return res.status(400).json({ status: false, message: 'Kirim gambar' })
+    const name = (req.query.name || 'WANTED').toString().slice(0, 30)
+    const PW = 750, PH = 1050
+
+    // Photo resized
+    const photoW = PW - 150, photoH = 400
+    const photoX = 75, photoY = 210
+    const photoBuf = await sharp(req.body).resize(photoW, photoH, { fit: 'cover' }).toBuffer()
+
+    // Poster via SVG
+    const svg = `<svg width="${PW}" height="${PH}">
+      <rect width="${PW}" height="${PH}" fill="#b8955a"/>
+      <text x="${PW/2}" y="110" font-family="sans-serif" font-weight="900" font-size="90" fill="#0d0800" text-anchor="middle">WANTED</text>
+      <text x="${PW/2}" y="175" font-family="sans-serif" font-weight="bold" font-size="38" fill="#0d0800" text-anchor="middle">★ DEAD OR ALIVE ★</text>
+      <text x="${PW/2}" y="730" font-family="sans-serif" font-weight="900" font-size="55" fill="#0d0800" text-anchor="middle">$1,000,000 REWARD</text>
+      <text x="${PW/2}" y="790" font-family="sans-serif" font-weight="bold" font-size="30" fill="#0d0800" text-anchor="middle">Dangerously Cute and</text>
+      <text x="${PW/2}" y="830" font-family="sans-serif" font-weight="bold" font-size="30" fill="#0d0800" text-anchor="middle">Notoriously Good Looking</text>
+    </svg>`
+
+    // Red stamp SVG (rotated via sharp)
+    const stampW = Math.round(photoW * 0.85), stampH = Math.round(photoH * 0.32)
+    const stampSvg = `<svg width="${stampW}" height="${stampH}">
+      <rect x="8" y="8" width="${stampW-16}" height="${stampH-16}" fill="none" stroke="#d21919" stroke-width="8"/>
+      <rect x="22" y="22" width="${stampW-44}" height="${stampH-44}" fill="none" stroke="#d21919" stroke-width="3"/>
+      <text x="${stampW/2}" y="${stampH/2 + stampH*0.16}" font-family="sans-serif" font-weight="900" font-size="${Math.round(stampH*0.42)}" fill="#d21919" text-anchor="middle">WANTED</text>
+    </svg>`
+    const stampBuf = await sharp(Buffer.from(stampSvg)).rotate(-10, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).toBuffer()
+    const stampMeta = await sharp(stampBuf).metadata()
+
+    const out = await sharp({ create: { width: PW, height: PH, channels: 3, background: '#b8955a' } })
+      .composite([
+        { input: Buffer.from(svg), top: 0, left: 0 },
+        { input: photoBuf, top: photoY, left: photoX },
+        { input: stampBuf, top: Math.round(photoY + (photoH - stampMeta.height) / 2), left: Math.round(photoX + (photoW - stampMeta.width) / 2) },
+      ])
+      .jpeg().toBuffer()
+    res.set('Content-Type', 'image/jpeg')
+    res.send(out)
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
 export default router
