@@ -510,12 +510,12 @@ router.post('/wasted', express.raw({ type: 'image/*', limit: '10mb' }), async (r
     const gray = await img.grayscale().modulate({ brightness: 0.65 }).toBuffer()
 
     // Gray bar + text via SVG
-    const barH = Math.round(h * 0.18)
+    const barH = Math.round(h * 0.22)
     const barY = Math.round((h - barH) / 2)
-    const fontSize = Math.round(barH * 0.6)
+    const fontSize = Math.round(barH * 0.72)
     const svg = `<svg width="${w}" height="${h}">
-      <rect x="0" y="${barY}" width="${w}" height="${barH}" fill="#505050" fill-opacity="0.9"/>
-      <text x="${w/2}" y="${barY + barH/2 + fontSize*0.35}" font-family="sans-serif" font-weight="bold" font-size="${fontSize}" fill="#b42828" stroke="black" stroke-width="4" text-anchor="middle">${text.replace(/[<>&]/g, '')}</text>
+      <rect x="0" y="${barY}" width="${w}" height="${barH}" fill="#4a4a4a" fill-opacity="0.95"/>
+      <text x="${w/2}" y="${barY + barH/2 + fontSize*0.35}" font-family="Arial, sans-serif" font-weight="900" font-size="${fontSize}" fill="#b42828" stroke="black" stroke-width="6" text-anchor="middle" letter-spacing="2">${text.replace(/[<>&]/g, '')}</text>
     </svg>`
 
     const out = await sharp(gray).composite([{ input: Buffer.from(svg), top: 0, left: 0 }]).jpeg().toBuffer()
