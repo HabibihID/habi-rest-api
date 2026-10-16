@@ -11,6 +11,7 @@
 
 import { Router } from 'express'
 import { generateCard, VALID_NETWORKS } from '../lib/tools/vcc.js'
+import { searchDestination, calculateCost, trackWaybill } from '../lib/tools/ongkir.js'
 import { imageToPdf, textToBarcode } from '../lib/tools/docgen.js'
 import express from 'express'
 import sharp from 'sharp'
@@ -640,6 +641,37 @@ router.get('/barcode', async (req, res) => {
     const png = await textToBarcode(text, format)
     res.setHeader('Content-Type', 'image/png')
     res.send(png)
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// GET /api/ongkir/destination?q=jakarta — cari ID kota/kecamatan
+router.get('/ongkir/destination', async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim()
+    if (!q) return res.status(400).json({ status: false, message: 'Parameter q wajib diisi.' })
+    const data = await searchDestination(q)
+    res.json({ status: true, data })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// GET /api/ongkir/cost?origin=ID&tujuan=ID&berat=1000&kurir=jne
+router.get('/ongkir/cost', async (req, res) => {
+  try {
+    const { origin, tujuan, destination, berat, weight, kurir, courier } = req.query
+    const o = origin, d = tujuan || destination
+    if (!o || !d) return res.status(400).json({ status: false, message: 'Parameter origin & tujuan wajib diisi (ID dari /ongkir/destination).' })
+    const data = await calculateCost(o, d, weight || berat || 1000, courier || kurir || '')
+    res.json({ status: true, data })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// GET /api/ongkir/lacak?awb=NORESI&kurir=jne
+router.get('/ongkir/lacak', async (req, res) => {
+  try {
+    const { awb, kurir, courier } = req.query
+    if (!awb || !(kurir || courier)) return res.status(400).json({ status: false, message: 'Parameter awb & kurir wajib diisi.' })
+    const data = await trackWaybill(awb, courier || kurir)
+    res.json({ status: true, data })
   } catch (e) { res.status(500).json({ status: false, message: e.message }) }
 })
 
