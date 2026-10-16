@@ -10,6 +10,8 @@
 //   100% milik sendiri — upscale 2x + sharpen + normalisasi pakai sharp.
 
 import { Router } from 'express'
+import { generateCard, VALID_NETWORKS } from '../lib/tools/vcc.js'
+import { imageToPdf, textToBarcode } from '../lib/tools/docgen.js'
 import express from 'express'
 import sharp from 'sharp'
 import axios from 'axios'
@@ -23,7 +25,7 @@ import { ytTranscript } from '../lib/tools/yttranscript.js'
 import { ringkasArtikel } from '../lib/tools/ringkas.js'
 import { cryptoPrice } from '../lib/tools/crypto.js'
 import { kurs } from '../lib/tools/kurs.js'
-import { animeInfo } from '../lib/tools/anime.js'
+import { animeInfo, animeSchedule, animeTrending, animeOngoing } from '../lib/tools/anime.js'
 import { ocrFromUrl } from '../lib/tools/ocr.js'
 import { textToSpeech } from '../lib/tools/tts.js'
 import { githubInfo } from '../lib/tools/github.js'
@@ -386,6 +388,36 @@ router.get('/anime', async (req, res) => {
   }
 })
 
+// ---- Anime: jadwal tayang 7 hari ke depan ----
+router.get('/anime/schedule', async (req, res) => {
+  try {
+    const data = await animeSchedule()
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Anime: trending & top ----
+router.get('/anime/trending', async (req, res) => {
+  try {
+    const data = await animeTrending()
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Anime: sedang tayang ----
+router.get('/anime/ongoing', async (req, res) => {
+  try {
+    const data = await animeOngoing()
+    res.json({ status: true, ...data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
 // ---- RemoveBG: hapus background (terima URL gambar) ----
 router.get('/removebg', async (req, res) => {
   const url = req.query.url
@@ -562,6 +594,52 @@ router.post('/wanted', express.raw({ type: 'image/*', limit: '10mb' }), async (r
       .jpeg().toBuffer()
     res.set('Content-Type', 'image/jpeg')
     res.send(out)
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// VCC generator (nomor testing/dummy)
+router.get('/vcc', (req, res) => {
+  try {
+    const networkArg = (req.query.network || 'all').trim()
+    const count = Math.min(10, Math.max(1, parseInt(req.query.count) || 1))
+    let targets
+    if (networkArg.toLowerCase() === 'all') {
+      targets = VALID_NETWORKS
+    } else {
+      const match = VALID_NETWORKS.find((n) => n.toLowerCase() === networkArg.toLowerCase())
+      if (!match) return res.status(400).json({ status: false, message: 'Network tidak dikenal. Pilihan: ' + VALID_NETWORKS.join(', ') + ', all' })
+      targets = [match]
+    }
+    const cards = []
+    for (const net of targets) {
+      for (let i = 0; i < count; i++) cards.push(generateCard(net))
+    }
+    res.json({ status: true, total: cards.length, cards })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// Foto -> PDF (via pdfkit)
+router.post('/topdf', async (req, res) => {
+  try {
+    const imgBuf = Buffer.isBuffer(req.body) ? req.body : null
+    if (!imgBuf || !imgBuf.length) return res.status(400).json({ status: false, message: 'Kirim body gambar (binary).' })
+    if (imgBuf.length > 10 * 1024 * 1024) return res.status(400).json({ status: false, message: 'Gambar maksimal 10 MB.' })
+    const pdf = await imageToPdf(imgBuf)
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'attachment; filename="convert.pdf"')
+    res.send(pdf)
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// Teks -> barcode PNG (via bwip-js)
+router.get('/barcode', async (req, res) => {
+  try {
+    const text = (req.query.text || '').trim()
+    if (!text) return res.status(400).json({ status: false, message: 'Parameter ?text= wajib diisi' })
+    const format = (req.query.format || 'code128').trim()
+    const png = await textToBarcode(text, format)
+    res.setHeader('Content-Type', 'image/png')
+    res.send(png)
   } catch (e) { res.status(500).json({ status: false, message: e.message }) }
 })
 

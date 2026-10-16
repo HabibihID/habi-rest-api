@@ -10,6 +10,9 @@ import toolsRoutes from './routes/tools.js'
 import gamesRoutes from './routes/games.js'
 import islamiRoutes from './routes/islami.js'
 import aiRoutes from './routes/ai.js'
+import storeRoutes from './routes/store.js'
+import ampresetRoutes from './routes/ampreset.js'
+import paymentRoutes from './routes/payment.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -21,6 +24,7 @@ app.use('/api/removebg', express.raw({ type: ['image/*', 'application/octet-stre
 app.use('/api/hd', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
 app.use('/api/skintoblack', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '10mb' }))
 app.use('/api/tourl', express.raw({ type: ['image/*', 'video/*', 'audio/*', 'application/octet-stream'], limit: '200mb' }))
+app.use('/api/topdf', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '15mb' }))
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -98,8 +102,11 @@ app.get('/health', (req, res) => {
 })
 
 // Semua /api/* butuh API key — stats hanya hitung request yang lolos auth
+app.use(storeRoutes) // Store Habibi — /store/* tanpa API key, terpisah dari /api
 app.use('/api', authMiddleware, trackApiStats)
 app.use('/api', downloadRoutes)
+app.use('/api/ampreset', ampresetRoutes)
+app.use('/api/payment', paymentRoutes)
 app.use('/api', generatorRoutes)
 app.use('/api', toolsRoutes)
 app.use('/api', gamesRoutes)
