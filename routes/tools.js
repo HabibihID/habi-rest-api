@@ -12,6 +12,7 @@
 import { Router } from 'express'
 import { generateCard, VALID_NETWORKS } from '../lib/tools/vcc.js'
 import { searchDestination, calculateCost, trackWaybill } from '../lib/tools/ongkir.js'
+import { listTheaters, getSchedule } from '../lib/tools/bioskop.js'
 import { imageToPdf, textToBarcode } from '../lib/tools/docgen.js'
 import express from 'express'
 import sharp from 'sharp'
@@ -671,6 +672,26 @@ router.get('/ongkir/lacak', async (req, res) => {
     const { awb, kurir, courier } = req.query
     if (!awb || !(kurir || courier)) return res.status(400).json({ status: false, message: 'Parameter awb & kurir wajib diisi.' })
     const data = await trackWaybill(awb, courier || kurir)
+    res.json({ status: true, data })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// GET /api/bioskop?kota=jakarta — daftar bioskop di kota
+router.get('/bioskop', async (req, res) => {
+  try {
+    const kota = (req.query.kota || '').trim()
+    if (!kota) return res.status(400).json({ status: false, message: 'Parameter kota wajib diisi. Contoh: ?kota=jakarta' })
+    const data = await listTheaters(kota)
+    res.json({ status: true, kota, total: data.length, data })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// GET /api/bioskop/jadwal?url=... — jadwal film di satu bioskop
+router.get('/bioskop/jadwal', async (req, res) => {
+  try {
+    const url = (req.query.url || '').trim()
+    if (!url || !url.includes('jadwalnonton.com')) return res.status(400).json({ status: false, message: 'Parameter url wajib (dari /api/bioskop).' })
+    const data = await getSchedule(url)
     res.json({ status: true, data })
   } catch (e) { res.status(500).json({ status: false, message: e.message }) }
 })
