@@ -130,10 +130,31 @@ const CATEGORIES = {
 
 let totalOk = 0, totalErr = 0;
 
-function render() {
+async function render() {
   const main = document.getElementById('docs');
   let total = 0;
-  for (const [cat, eps] of Object.entries(CATEGORIES)) {
+  let CATS = CATEGORIES;
+  try {
+    const r = await fetch('/docs/endpoints');
+    const j = await r.json();
+    if (j.status && j.endpoints?.length) {
+      // Kelompokkan by prefix path jadi kategori dinamis
+      CATS = {};
+      for (const ep of j.endpoints) {
+        const parts = ep.path.split('/').filter(Boolean);
+        let cat = '🔧 Lainnya';
+        if (parts[0] === 'api' && parts[1]) {
+          const sub = parts[1].toLowerCase();
+          if (['ai','text2img','translate','sentiment','imgclass','stt'].includes(sub)) cat = '🤖 AI';
+          else if (['tiktok','instagram','youtube','ytdl','ytmp3pc','facebook','spotify','twitter','pinterest','capcut','mediafire','gdrive','threads','aio','ytsearch'].includes(sub)) cat = '📥 Downloader';
+          else cat = '🧰 ' + parts[1];
+        } else if (parts[0] === 'store') cat = '🛍️ Store';
+        if (!CATS[cat]) CATS[cat] = [];
+        CATS[cat].push({ path: ep.path, params: 'apikey=<redacted>', desc: ep.methods.join(',') + ' ' + ep.path, method: ep.methods[0] });
+      }
+    }
+  } catch {}
+  for (const [cat, eps] of Object.entries(CATS)) {
     total += eps.length;
     const card = document.createElement('div');
     card.className = 'card';

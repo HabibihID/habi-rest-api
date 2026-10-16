@@ -101,6 +101,36 @@ app.get('/health', (req, res) => {
   res.json({ status: true, message: 'HABI REST API jalan!', time: new Date().toISOString() })
 })
 
+// Daftar semua endpoint (dinamis, tanpa auth) — dipakai halaman dokumentasi
+app.get('/docs/endpoints', (req, res) => {
+  const out = []
+  const walk = (stack, prefix = '') => {
+    for (const l of stack) {
+      if (l.route) {
+        const methods = Object.keys(l.route.methods).filter(m => m !== '_all').map(m => m.toUpperCase())
+        out.push({ methods, path: prefix + l.route.path })
+      } else if (l.name === 'router' && l.handle && l.handle.stack) {
+        let mp = ''
+        try {
+          const src = l.regexp.source
+          // /^\/api\/?(?=\/|$)/i  →  /api
+          const m = src.match(/\^\\\/([^\\]*)\\\//)
+          if (m) mp = '/' + m[1].replace(/\\\//g, '/')
+        } catch {}
+        walk(l.handle.stack, prefix + mp)
+      }
+    }
+  }
+  try { walk(app._router.stack) } catch {}
+  const seen = new Set()
+  const uniq = out.filter(e => {
+    const k = e.methods.join(',') + ' ' + e.path
+    if (seen.has(k) || e.path.includes('*')) return false
+    seen.add(k); return true
+  }).sort((a, b) => a.path.localeCompare(b.path))
+  res.json({ status: true, total: uniq.length, endpoints: uniq })
+})
+
 // Semua /api/* butuh API key — stats hanya hitung request yang lolos auth
 app.use(storeRoutes) // Store Habibi — /store/* tanpa API key, terpisah dari /api
 app.use('/api', authMiddleware, trackApiStats)
