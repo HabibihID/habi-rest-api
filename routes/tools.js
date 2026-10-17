@@ -13,7 +13,6 @@ import { Router } from 'express'
 import { generateCard, VALID_NETWORKS } from '../lib/tools/vcc.js'
 import { searchDestination, calculateCost, trackWaybill } from '../lib/tools/ongkir.js'
 import { listTheaters, getSchedule } from '../lib/tools/bioskop.js'
-import { winkInfo, winkEnhance } from '../lib/tools/wink.js'
 import { imageToPdf, textToBarcode } from '../lib/tools/docgen.js'
 import express from 'express'
 import sharp from 'sharp'
@@ -697,20 +696,5 @@ router.get('/bioskop/jadwal', async (req, res) => {
   } catch (e) { res.status(500).json({ status: false, message: e.message }) }
 })
 
-// GET /api/wink/info — info mode enhancer (tanpa login)
-router.get('/wink/info', (req, res) => {
-  res.json({ status: true, data: winkInfo() })
-})
-
-// POST /api/wink/enhance?mode=ultrahd — enhance gambar (butuh WINK_COOKIE di env)
-router.post('/wink/enhance', express.raw({ type: ['image/*', 'application/octet-stream'], limit: '15mb' }), async (req, res) => {
-  try {
-    if (!req.body?.length) return res.status(400).json({ status: false, message: 'Kirim gambar sebagai body.' })
-    const mode = (req.query.mode || 'ultrahd').toLowerCase()
-    const out = await winkEnhance(req.body, 'image.jpg', mode)
-    res.set('Content-Type', out.mime)
-    res.send(out.buffer)
-  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
-})
 
 export default router
