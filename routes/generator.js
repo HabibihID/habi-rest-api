@@ -42,11 +42,18 @@ async function sendBinary(res, fn, mime) {
 // ... (existing routes: brat, bratvid, iqc, qrcode, ssweb) ...
 router.get('/brat', (req, res) => {
   const text = needText(req, res); if (!text) return
-  sendBinary(res, () => bratGen(text), 'image/png')
+  sendBinary(res, () => bratGen(text, { theme: req.query.theme, blur: parseInt(req.query.blur) || 0 }), 'image/png')
 })
 router.get('/bratvid', (req, res) => {
   const text = needText(req, res); if (!text) return
-  sendBinary(res, () => bratVidGen(text), 'video/mp4')
+  const format = req.query.format === 'gif' ? 'gif' : 'mp4'
+  const opts = {
+    theme: req.query.theme,
+    blur: parseInt(req.query.blur) || 0,
+    format,
+    hold: req.query.hold !== undefined ? Number(req.query.hold) : 1.5,
+  }
+  sendBinary(res, () => bratVidGen(text, opts), format === 'gif' ? 'image/gif' : 'video/mp4')
 })
 router.get('/iqc', (req, res) => {
   const text = needText(req, res); if (!text) return

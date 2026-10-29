@@ -3,6 +3,7 @@ import { getComments, extractVideoId } from '../lib/ampreset/providers.js'
 import { parseComments } from '../lib/ampreset/parser.js'
 import { get as cacheGet, set as cacheSet, cacheKey } from '../lib/ampreset/cache.js'
 import { enqueue } from '../lib/ampreset/queue.js'
+import { getTikTokAmPreset } from '../lib/ampreset/tiktok-am-preset.mjs'
 
 const router = Router()
 
@@ -20,6 +21,28 @@ router.get('/', async (req, res) => {
   if (cached) {
     return res.json({ ...cached, cached: true })
   }
+
+  // 1b. Mesin utama (modul kiriman user 2026-10-21): baca komentar +
+  // balasan publik TikTok; preset AM biasanya dibagikan di balasan.
+  try {
+    const d = await getTikTokAmPreset({ url })
+    const urls = [
+      ...d.links.map((l) => ({ type: 'Alight Motion', url: l.url, from: 'TikTok' })),
+      ...d.candidates.map((c) => ({ type: 'Kandidat', url: c.url, from: 'TikTok' })),
+    ]
+    const out = {
+      status: true,
+      video_id: d.videoId,
+      provider: 'tiktok-replies',
+      total_comments: d.commentsScanned + d.repliesScanned,
+      total_urls: urls.length,
+      urls,
+      by_user: { TikTok: urls },
+      truncated: d.pagination.truncated,
+    }
+    cacheSet(key, out)
+    return res.json(out)
+  } catch { /* upstream gagal -> rantai provider lama di bawah */ }
 
   // 2. queue agar tidak spam provider
   let ds

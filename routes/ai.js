@@ -13,10 +13,11 @@
 //   - Random PAP: https://picsum.photos/800 — foto stok acak, dijamin aman/SFW.
 
 import { Router } from 'express'
-import { chatAi, text2img } from '../lib/ai/ai.js'
+import { chatAi, text2img, sttWhisper, sentimentText, classifyImage, translateAi } from '../lib/ai/ai.js'
+import { pollinationsImage } from '../lib/ai/pollinations.js'
+import { botaChat } from '../lib/ai/bota.js'
 
 const router = Router()
-const PROXY_BASE = 'https://proxy.servercloud.my.id/proxy'
 
 async function fetchWithTimeout(url, opts = {}, ms) {
   const c = new AbortController()
@@ -72,6 +73,27 @@ router.get('/text2img', async (req, res) => {
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
+})    
+// ---- AI text-to-image via Pollinations (mesin kedua) ----
+router.get('/pollinations', async (req, res) => {
+  const prompt = needPrompt(req, res); if (!prompt) return
+  try {
+    const buf = await pollinationsImage(prompt, { model: req.query.model, width: req.query.width, height: req.query.height })
+    res.type('image/jpeg').send(buf)
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// Bota.chat — AI chat (sesi tamu tunggal, tanpa rotasi identitas)
+// GET /api/bota?text=halo&web=1
+router.get('/bota', async (req, res) => {
+  const text = (req.query.text || '').trim()
+  if (!text) return res.status(400).json({ status: false, message: 'Parameter ?text= wajib diisi' })
+  try {
+    const data = await botaChat(text, { webSearch: req.query.web === '1' || req.query.web === 'true' })
+    res.json({ status: true, data })
+  } catch (e) { res.json({ status: false, message: e.message }) }
 })
 
 // ---- Blue Archive random (SFW via Safebooru, rating:safe) ----
@@ -123,14 +145,8 @@ router.post('/stt', async (req, res) => {
     for await (const c of req) chunks.push(c)
     const buf = Buffer.concat(chunks)
     if (buf.length < 100) return res.status(400).json({ status: false, message: 'Kirim audio sebagai body' })
-    const r = await fetchWithTimeout(`${PROXY_BASE}?target=whisper`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'audio/mpeg' },
-      body: buf,
-    }, 60000)
-    const j = await r.json()
-    if (!j.status) throw new Error(j.message)
-    res.json({ status: true, text: j.text })
+    const text = await sttWhisper(buf)
+    res.json({ status: true, text })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
@@ -141,11 +157,9 @@ router.get('/sentiment', async (req, res) => {
   const text = req.query.text
   if (!text) return res.status(400).json({ status: false, message: 'Parameter ?text= wajib diisi' })
   try {
-    const r = await fetchWithTimeout(`${PROXY_BASE}?target=sentiment&text=${encodeURIComponent(text)}`, {}, 30000)
-    const j = await r.json()
-    if (!j.status) throw new Error(j.message)
-    const top = j.result.sort((a, b) => b.score - a.score)[0]
-    res.json({ status: true, label: top.label, score: top.score, all: j.result })
+    const all = await sentimentText(String(text))
+    const top = [...all].sort((a, b) => b.score - a.score)[0]
+    res.json({ status: true, label: top.label, score: top.score, all })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
@@ -158,14 +172,8 @@ router.post('/imgclass', async (req, res) => {
     for await (const c of req) chunks.push(c)
     const buf = Buffer.concat(chunks)
     if (buf.length < 100) return res.status(400).json({ status: false, message: 'Kirim gambar sebagai body' })
-    const r = await fetchWithTimeout(`${PROXY_BASE}?target=imgclass`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'image/jpeg' },
-      body: buf,
-    }, 60000)
-    const j = await r.json()
-    if (!j.status) throw new Error(j.message)
-    res.json({ status: true, result: j.result })
+    const result = await classifyImage(buf)
+    res.json({ status: true, result })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }
@@ -176,13 +184,8 @@ router.get('/translate', async (req, res) => {
   const { text, from = 'english', to = 'indonesian' } = req.query
   if (!text) return res.status(400).json({ status: false, message: 'Parameter ?text= wajib diisi' })
   try {
-    const r = await fetchWithTimeout(
-      `${PROXY_BASE}?target=translate&text=${encodeURIComponent(text)}&source=${from}&target_lang=${to}`,
-      {}, 30000
-    )
-    const j = await r.json()
-    if (!j.status) throw new Error(j.message)
-    res.json({ status: true, result: j.result })
+    const result = await translateAi(String(text), String(from), String(to))
+    res.json({ status: true, result })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
   }

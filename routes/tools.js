@@ -11,6 +11,7 @@
 
 import { Router } from 'express'
 import { generateCard, VALID_NETWORKS } from '../lib/tools/vcc.js'
+import { getWaifu, WAIFU_CATEGORIES } from '../lib/tools/waifu.js'
 import { searchDestination, calculateCost, trackWaybill } from '../lib/tools/ongkir.js'
 import { listTheaters, getSchedule } from '../lib/tools/bioskop.js'
 import { imageToPdf, textToBarcode } from '../lib/tools/docgen.js'
@@ -27,6 +28,16 @@ import { ytTranscript } from '../lib/tools/yttranscript.js'
 import { ringkasArtikel } from '../lib/tools/ringkas.js'
 import { cryptoPrice } from '../lib/tools/crypto.js'
 import { kurs } from '../lib/tools/kurs.js'
+import { stalkMl } from '../lib/tools/stalkml.js'
+import { ghstalk } from '../lib/tools/ghstalk.js'
+import { komikSearch, komikLatest, komikPopular, komikDetail, komikChapter } from '../lib/tools/komikcast.js'
+import { getFFInfo } from '../lib/tools/ffstalk.js'
+import { searchPinterest } from '../lib/tools/pinsearch.js'
+import { search as amSearch, resolve as amResolve } from '../lib/tools/applemusic.js'
+import { stickerlySearch, stickerlyPack } from '../lib/tools/stickerly.js'
+import { otakuHome, otakuOngoing, otakuComplete, otakuSearch, otakuDetail, otakuEpisode, otakuSchedule, otakuGenres, otakuGenre } from '../lib/tools/otakudesu.js'
+import { ispuSummary, ispuSearch, ispuRanking, ispuStation, ispuProvinsi } from '../lib/tools/ispu.js'
+import { ddgSearch } from '../lib/tools/ddg.js'
 import { animeInfo, animeSchedule, animeTrending, animeOngoing } from '../lib/tools/anime.js'
 import { ocrFromUrl } from '../lib/tools/ocr.js'
 import { textToSpeech } from '../lib/tools/tts.js'
@@ -341,6 +352,17 @@ router.post('/ocr', express.raw({ type: ['image/*', 'application/octet-stream'],
     res.json({ status: true, text })
   } catch (e) {
     res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+// ---- Waifu (gambar anime acak SFW) ----
+router.get('/waifu', async (req, res) => {
+  try {
+    const data = await getWaifu(req.query.cat || 'waifu')
+    res.json({ status: true, result: data })
+  } catch (e) {
+    const bad = /tidak ada/.test(e.message)
+    res.status(bad ? 400 : 500).json({ status: false, message: e.message, categories: WAIFU_CATEGORIES })
   }
 })
 
@@ -692,6 +714,197 @@ router.get('/bioskop/jadwal', async (req, res) => {
     const url = (req.query.url || '').trim()
     if (!url || !url.includes('jadwalnonton.com')) return res.status(400).json({ status: false, message: 'Parameter url wajib (dari /api/bioskop).' })
     const data = await getSchedule(url)
+    res.json({ status: true, data })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+
+// ---- Stalk Mobile Legends ----
+// GET /api/stalkml?id=1114917746&zone=13486  (zone bisa juga menyatu: id=1114917746(13486))
+router.get('/stalkml', async (req, res) => {
+  const id = (req.query.id || '').trim()
+  const zone = (req.query.zone || '').trim()
+  if (!id) return res.status(400).json({ status: false, message: 'Parameter ?id= wajib diisi. Contoh: ?id=1114917746&zone=13486' })
+  try {
+    const data = await stalkMl(id, zone)
+    res.json({ status: true, data })
+  } catch (e) {
+    res.json({ status: false, message: e.message })
+  }
+})
+// ---- Komikcast ----
+// GET /api/komikcast/search?q=solo&page=1 | /latest?page=1 | /popular?page=1
+// GET /api/komikcast/detail?slug=solo-swordmaster
+// GET /api/komikcast/chapter?slug=solo-swordmaster&chapter=23  (atau ?url=<url chapter>)
+router.get('/komikcast/search', async (req, res) => {
+  const q = (req.query.q || '').trim()
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi. Contoh: ?q=solo' })
+  try { res.json({ status: true, data: await komikSearch(q, Number(req.query.page) || 1) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/komikcast/latest', async (req, res) => {
+  try { res.json({ status: true, data: await komikLatest(Number(req.query.page) || 1) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/komikcast/popular', async (req, res) => {
+  try { res.json({ status: true, data: await komikPopular(Number(req.query.page) || 1) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/komikcast/detail', async (req, res) => {
+  const slug = (req.query.slug || req.query.url || '').trim()
+  if (!slug) return res.status(400).json({ status: false, message: 'Parameter ?slug= wajib diisi.' })
+  try { res.json({ status: true, data: await komikDetail(slug) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/komikcast/chapter', async (req, res) => {
+  const slug = (req.query.slug || req.query.url || '').trim()
+  if (!slug) return res.status(400).json({ status: false, message: 'Parameter ?slug= wajib diisi.' })
+  try { res.json({ status: true, data: await komikChapter(slug, req.query.chapter) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+// ---- FF Stalk ----
+// GET /api/ffstalk?uid=4265550347
+router.get('/ffstalk', async (req, res) => {
+  const uid = (req.query.uid || '').trim()
+  if (!uid) return res.status(400).json({ status: false, message: 'Parameter ?uid= wajib diisi. Contoh: ?uid=4265550347' })
+  try { res.json({ status: true, data: await getFFInfo(uid) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+// ---- Pinterest Search ----
+// GET /api/pinsearch?q=nature&limit=20&type=all|foto|video|gif
+router.get('/pinsearch', async (req, res) => {
+  const q = (req.query.q || '').trim()
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi. Contoh: ?q=nature' })
+  try { res.json({ status: true, data: await searchPinterest(q, { limit: req.query.limit, type: req.query.type }) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+
+// ---- Apple Music ----
+// GET /api/amsearch?q=hindia&limit=10&country=id
+router.get('/amsearch', async (req, res) => {
+  const q = (req.query.q || '').trim()
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi. Contoh: ?q=hindia' })
+  try { res.json({ status: true, data: await amSearch(q, { country: req.query.country || 'id', limit: Math.min(parseInt(req.query.limit) || 10, 25) }) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+// GET /api/applemusic/resolve?url=<link music.apple.com>
+router.get('/applemusic/resolve', async (req, res) => {
+  const url = (req.query.url || '').trim()
+  if (!url) return res.status(400).json({ status: false, message: 'Parameter ?url= wajib diisi.' })
+  try { res.json({ status: true, data: await amResolve(url) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+// ---- Otakudesu ----
+// GET /api/otakudesu/search?q=naruto | /ongoing?page=1 | /complete?page=1 | /home
+//     /detail?slug= | /episode?slug= | /schedule | /genres | /genre?slug=&page=
+router.get('/otakudesu/home', async (req, res) => {
+  try { res.json({ status: true, data: await otakuHome() }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/ongoing', async (req, res) => {
+  try { res.json({ status: true, data: await otakuOngoing(Number(req.query.page) || 1) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/complete', async (req, res) => {
+  try { res.json({ status: true, data: await otakuComplete(Number(req.query.page) || 1) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/search', async (req, res) => {
+  const q = (req.query.q || '').trim()
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi. Contoh: ?q=naruto' })
+  try { res.json({ status: true, data: await otakuSearch(q) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/detail', async (req, res) => {
+  const slug = (req.query.slug || req.query.url || '').trim()
+  if (!slug) return res.status(400).json({ status: false, message: 'Parameter ?slug= wajib diisi.' })
+  try { res.json({ status: true, data: await otakuDetail(slug) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/episode', async (req, res) => {
+  const slug = (req.query.slug || req.query.url || '').trim()
+  if (!slug) return res.status(400).json({ status: false, message: 'Parameter ?slug= wajib diisi.' })
+  try { res.json({ status: true, data: await otakuEpisode(slug) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/schedule', async (req, res) => {
+  try { res.json({ status: true, data: await otakuSchedule() }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/genres', async (req, res) => {
+  try { res.json({ status: true, data: await otakuGenres() }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/otakudesu/genre', async (req, res) => {
+  const slug = (req.query.slug || '').trim()
+  if (!slug) return res.status(400).json({ status: false, message: 'Parameter ?slug= wajib diisi.' })
+
+try { res.json({ status: true, data: await otakuGenre(slug, Number(req.query.page) || 1) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+
+
+// ---- ISPU (KLHK) ----
+// GET /api/ispu/summary | /search?q=jakarta | /ranking?limit=20&provinsi= | /station?id= | /provinsi?name=
+router.get('/ispu/summary', async (req, res) => {
+  try { res.json({ status: true, data: await ispuSummary() }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/ispu/search', async (req, res) => {
+  const q = (req.query.q || '').trim()
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter ?q= wajib diisi. Contoh: ?q=jakarta' })
+  try { res.json({ status: true, data: await ispuSearch(q) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/ispu/ranking', async (req, res) => {
+  try { res.json({ status: true, data: await ispuRanking({ limit: Math.min(parseInt(req.query.limit) || 20, 50), provinsi: req.query.provinsi || undefined, kota: req.query.kota || undefined }) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/ispu/station', async (req, res) => {
+  const id = (req.query.id || '').trim()
+  if (!id) return res.status(400).json({ status: false, message: 'Parameter ?id= wajib diisi.' })
+  try { res.json({ status: true, data: await ispuStation(id) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+router.get('/ispu/provinsi', async (req, res) => {
+  const name = (req.query.name || '').trim()
+  if (!name) return res.status(400).json({ status: false, message: 'Parameter ?name= wajib diisi.' })
+  try { res.json({ status: true, data: await ispuProvinsi(name) }) }
+  catch (e) { res.json({ status: false, message: e.message }) }
+})
+
+
+// ── DuckDuckGo Search ────────────────────────────────────────────────
+router.get('/ddg', async (req, res) => {
+  const q = String(req.query.q || '').trim()
+  if (!q) return res.status(400).json({ status: false, message: 'Parameter q wajib diisi' })
+  try {
+    const data = await ddgSearch(q, { max: req.query.max, region: req.query.region || '' })
+    res.json({ status: true, data })
+  } catch (e) {
+    res.status(500).json({ status: false, message: e.message })
+  }
+})
+
+
+// GET /api/stickerly/search?q=anime | /api/stickerly/pack?url=https://sticker.ly/s/XXX
+router.get('/stickerly/search', async (req, res) => {
+  try {
+    const data = await stickerlySearch(req.query.q)
+    res.json({ status: true, data })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+router.get('/stickerly/pack', async (req, res) => {
+  try {
+    const data = await stickerlyPack(req.query.url)
+    res.json({ status: true, data })
+  } catch (e) { res.status(500).json({ status: false, message: e.message }) }
+})
+router.get('/ghstalk', async (req, res) => {
+  try {
+    const username = (req.query.username || '').toString().trim()
+    if (!username) return res.status(400).json({ status: false, message: 'username wajib diisi' })
+    const data = await ghstalk(username)
+    if (!data) return res.status(404).json({ status: false, message: 'User GitHub tidak ditemukan' })
     res.json({ status: true, data })
   } catch (e) { res.status(500).json({ status: false, message: e.message }) }
 })

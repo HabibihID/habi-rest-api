@@ -16,6 +16,7 @@ import {
   tebakapakahaku,
   tebakkata,
   caklontong,
+  tebaksurah,
 } from '../lib/games/banks.js'
 
 const router = Router()
@@ -45,6 +46,11 @@ router.get('/tebakapakahaku', (req, res) => {
 router.get('/tebakkata', (req, res) => {
   const item = pick(tebakkata)
   res.json({ status: true, result: { soal: item.soal, jawaban: item.jawaban } })
+})
+
+router.get('/tebaksurah', (req, res) => {
+  const item = pick(tebaksurah)
+  res.json({ status: true, result: { soal: item.soal, arti: item.arti, jawaban: item.jawaban } })
 })
 
 router.get('/caklontong', (req, res) => {

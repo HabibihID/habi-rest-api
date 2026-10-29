@@ -7,10 +7,13 @@ import { authMiddleware, adminMiddleware } from './lib/auth.js'
 import { createKey, revokeKey, listKeys } from './lib/db.js'
 import downloadRoutes from './routes/download.js'
 import generatorRoutes from './routes/generator.js'
+import welcomeRoutes from './routes/welcome.js'
+import battlecardRoutes from './routes/battlecard.js'
 import toolsRoutes from './routes/tools.js'
 import gamesRoutes from './routes/games.js'
 import islamiRoutes from './routes/islami.js'
 import aiRoutes from './routes/ai.js'
+import fiturRoutes from './routes/fitur.js'
 import storeRoutes from './routes/store.js'
 import ampresetRoutes from './routes/ampreset.js'
 import paymentRoutes from './routes/payment.js'
@@ -95,11 +98,22 @@ function broadcastStats() {
 }
 // Broadcast tiap ada request baru (throttle 1 detik)
 let broadcastTimer = null
-const _origNext = null
 
-// Health check (tanpa auth)
+// Health check (tanpa auth) — untuk monitoring & load balancer
+const bootTime = Date.now()
 app.get('/health', (req, res) => {
-  res.json({ status: true, message: 'HABI REST API jalan!', time: new Date().toISOString() })
+  const mem = process.memoryUsage()
+  res.json({
+    status: true,
+    message: 'HABI REST API jalan!',
+    version: '2.0.0',
+    uptime: Math.floor((Date.now() - bootTime) / 1000),
+    memory: {
+      rss: Math.round(mem.rss / 1024 / 1024) + 'MB',
+      heapUsed: Math.round(mem.heapUsed / 1024 / 1024) + 'MB',
+    },
+    time: new Date().toISOString(),
+  })
 })
 
 // Daftar semua endpoint (dinamis, tanpa auth) — dipakai halaman dokumentasi
@@ -134,6 +148,8 @@ app.get('/docs/endpoints', (req, res) => {
 
 // Semua /api/* butuh API key — stats hanya hitung request yang lolos auth
 app.use(storeRoutes) // Store Habibi — /store/* tanpa API key, terpisah dari /api
+app.use('/api', welcomeRoutes)
+app.use('/api', battlecardRoutes)
 app.use('/api', authMiddleware, trackApiStats)
 app.use('/api', downloadRoutes)
 app.use('/api/ampreset', ampresetRoutes)
@@ -143,6 +159,7 @@ app.use('/api', toolsRoutes)
 app.use('/api', gamesRoutes)
 app.use('/api', islamiRoutes)
 app.use('/api', aiRoutes)
+app.use('/api/fitur', fiturRoutes)
 
 // Admin: buat API key baru
 app.post('/admin/key', adminMiddleware, (req, res) => {
@@ -164,6 +181,22 @@ app.post('/admin/revoke', adminMiddleware, (req, res) => {
   res.json({ status: true, message: 'Key di-revoke' })
 })
 
+// 404 handler — untuk path yang tidak dikenal
+app.use((req, res) => {
+  res.status(404).json({ status: false, message: `Endpoint ${req.method} ${req.path} tidak ditemukan. Lihat /docs/endpoints untuk daftar lengkap.` })
+})
+
+// Global error handler — jangan biarkan error mentah bocor ke client
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error(`[ERROR] ${req.method} ${req.path}:`, err.message)
+  const status = err.status || err.statusCode || 500
+  res.status(status).json({
+    status: false,
+    message: status === 500 ? 'Terjadi kesalahan di server, coba lagi nanti.' : err.message,
+  })
+})
+
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 HABI REST API jalan di port ${PORT}`)
+  console.log(`🚀 HABI REST API v2 jalan di port ${PORT}`)
 })

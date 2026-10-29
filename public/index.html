@@ -4,262 +4,376 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HABI REST API — Dokumentasi</title>
+<meta name="description" content="Dokumentasi REST API HABI — AI, Downloader, Generator, Tools, dan lainnya.">
 <style>
+:root{
+  --bg:#0b0b14; --bg2:#12121f; --card:#16162a; --border:#2a2a45;
+  --text:#e8e8f0; --muted:#9a9ab0; --accent:#7c3aed; --accent2:#4f46e5;
+  --green:#10b981; --red:#ef4444; --amber:#f59e0b; --blue:#38bdf8; --yellow:#fbbf24;
+  --code-bg:#0d0d18; --radius:14px;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh}
-header{background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:2.5rem 1rem;text-align:center}
-header h1{font-size:2.2rem;margin-bottom:.5rem}
-header p{opacity:.85}
-.stats{display:flex;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
-.stat{background:rgba(255,255,255,.1);padding:.5rem 1rem;border-radius:8px;font-size:.9rem}
-.stat b{font-size:1.2rem}
-main{max-width:1000px;margin:0 auto;padding:2rem 1rem}
-.card{background:#1a1a2e;border:1px solid #2d2d44;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
-.card h2{color:#a78bfa;margin-bottom:1rem;font-size:1.2rem}
-.endpoint{background:#12121f;border-radius:8px;padding:1rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:.75rem}
-.ep-info{flex:1;font-family:monospace;font-size:.85rem}
-.method{display:inline-block;background:#10b981;color:#fff;padding:.15rem .6rem;border-radius:4px;font-weight:700;margin-right:.5rem;font-size:.75rem}
-.method.post{background:#f59e0b}
-.url{color:#7dd3fc;word-break:break-all}
-.desc{color:#9ca3af;margin-top:.5rem;font-family:'Segoe UI',sans-serif;font-size:.85rem}
-.param{color:#fbbf24}
-.status{width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;background:#6b7280}
-.status.ok{background:#10b981;box-shadow:0 0 8px #10b981}
-.status.err{background:#ef4444;box-shadow:0 0 8px #ef4444}
-.status.checking{background:#f59e0b;animation:pulse 1s infinite}
-@keyframes pulse{50%{opacity:.4}}
-.try-btn{background:#4f46e5;color:#fff;border:none;padding:.4rem .8rem;border-radius:6px;cursor:pointer;font-size:.8rem;margin-top:.5rem}
-.try-btn:hover{background:#6366f1}
-footer{text-align:center;padding:2rem;color:#6b7280;font-size:.85rem}
-code{background:#2d2d44;padding:.15rem .4rem;border-radius:4px;font-size:.85em}
-#apikey-input{background:#12121f;border:1px solid #2d2d44;color:#fff;padding:.5rem 1rem;border-radius:8px;width:300px;margin-top:1rem;font-family:monospace}
-#search-input{background:#12121f;border:1px solid #2d2d44;color:#fff;padding:.5rem 1rem;border-radius:8px;width:300px;margin-top:.5rem;font-family:monospace}
-.copy-btn{background:#2d2d44;color:#a78bfa;border:none;padding:.25rem .6rem;border-radius:4px;cursor:pointer;font-size:.75rem;margin-left:.5rem}
-.copy-btn:hover{background:#3d3d5c}
-.theme-toggle{position:fixed;top:1rem;right:1rem;background:#4f46e5;color:#fff;border:none;padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-size:.9rem;z-index:100}
-body.light{background:#f5f5f5;color:#1a1a1a}
-body.light .card{background:#fff;border-color:#e0e0e0}
-body.light .endpoint{background:#f0f0f5}
-body.light .desc{color:#666}
-body.light #apikey-input,body.light #search-input{background:#fff;border-color:#ddd;color:#1a1a1a}
-body.light code{background:#e8e8e8}
-.uptime{font-size:.75rem;color:#9ca3af;margin-left:.5rem}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+body.light{--bg:#f4f4f8;--bg2:#ffffff;--card:#ffffff;--border:#e2e2ee;--text:#1a1a2e;--muted:#666680;--code-bg:#f0f0f6}
+
+/* ===== HERO ===== */
+.hero{background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 50%,#2563eb 100%);padding:4rem 1.5rem 3rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.12),transparent 50%),radial-gradient(circle at 70% 80%,rgba(255,255,255,.08),transparent 50%)}
+.hero-inner{position:relative;max-width:800px;margin:0 auto}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;margin-bottom:.5rem;letter-spacing:-.02em}
+.hero p{opacity:.9;font-size:1.05rem;margin-bottom:1.5rem}
+.hero-badges{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.badge{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);padding:.5rem 1.1rem;border-radius:99px;font-size:.9rem;border:1px solid rgba(255,255,255,.2)}
+.badge b{font-size:1.15rem;margin-right:.3rem}
+.hero-cta{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-block;padding:.7rem 1.6rem;border-radius:10px;font-weight:600;text-decoration:none;cursor:pointer;border:none;font-size:.95rem;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn-white{background:#fff;color:#4f46e5;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)}
+
+/* ===== TOOLBAR ===== */
+.toolbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.8rem 1.5rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+.toolbar .logo{font-weight:800;font-size:1.1rem;margin-right:auto}
+.toolbar input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.55rem 1rem;border-radius:10px;font-size:.9rem;min-width:200px}
+.toolbar input:focus{outline:none;border-color:var(--accent)}
+.theme-btn{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.55rem .9rem;border-radius:10px;cursor:pointer;font-size:1rem}
+
+/* ===== LAYOUT ===== */
+.layout{display:flex;max-width:1400px;margin:0 auto;align-items:flex-start}
+.sidebar{position:sticky;top:73px;width:240px;flex-shrink:0;padding:1.5rem 1rem;max-height:calc(100vh - 73px);overflow-y:auto;display:none}
+@media(min-width:1024px){.sidebar{display:block}}
+.sidebar h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.75rem}
+.sidebar a{display:block;padding:.45rem .8rem;border-radius:8px;color:var(--muted);text-decoration:none;font-size:.88rem;transition:all .15s}
+.sidebar a:hover{background:var(--bg2);color:var(--text)}
+.sidebar a .count{float:right;background:var(--bg2);border-radius:99px;padding:0 .5rem;font-size:.75rem}
+main{flex:1;min-width:0;padding:2rem 1.5rem;max-width:1000px}
+
+/* ===== CARDS ===== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem}
+.card h2{font-size:1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card h2 .count{background:var(--bg2);border:1px solid var(--border);font-size:.75rem;padding:.15rem .6rem;border-radius:99px;color:var(--muted)}
+
+/* ===== ENDPOINT ===== */
+.endpoint{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:.75rem;overflow:hidden;transition:border-color .2s}
+.endpoint:hover{border-color:var(--accent)}
+.ep-head{display:flex;align-items:flex-start;gap:.75rem;padding:1rem;cursor:pointer}
+.status-dot{width:10px;height:10px;border-radius:50%;margin-top:6px;flex-shrink:0;background:#6b7280}
+.status-dot.ok{background:var(--green);box-shadow:0 0 8px var(--green)}
+.status-dot.err{background:var(--red);box-shadow:0 0 8px var(--red)}
+.status-dot.checking{background:var(--amber);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.ep-main{flex:1;min-width:0}
+.method{display:inline-block;color:#fff;padding:.2rem .65rem;border-radius:6px;font-weight:700;font-size:.72rem;margin-right:.6rem;letter-spacing:.03em}
+.method.get{background:var(--green)} .method.post{background:var(--amber)} .method.put{background:var(--blue)} .method.delete{background:var(--red)}
+.ep-path{font-family:'JetBrains Mono',Consolas,monospace;font-size:.88rem;color:var(--blue);word-break:break-all}
+.ep-desc{color:var(--muted);font-size:.85rem;margin-top:.35rem}
+.ep-toggle{margin-left:auto;flex-shrink:0;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem}
+
+/* ===== PLAYGROUND ===== */
+.playground{display:none;border-top:1px solid var(--border);padding:1.25rem;background:var(--code-bg)}
+.endpoint.open .playground{display:block}
+.endpoint.open .ep-toggle{transform:rotate(180deg)}
+.pg-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem;align-items:center}
+.pg-row label{font-size:.8rem;color:var(--muted);min-width:90px}
+.pg-row input{flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.55rem .9rem;border-radius:8px;font-family:monospace;font-size:.85rem}
+.pg-row input:focus{outline:none;border-color:var(--accent)}
+.pg-actions{display:flex;gap:.6rem;margin:.9rem 0}
+.btn-run{background:var(--green);color:#fff;padding:.6rem 1.4rem}
+.btn-copy{background:var(--bg2);color:var(--text);border:1px solid var(--border);padding:.6rem 1rem}
+.pg-result{display:none;margin-top:.8rem}
+.pg-result.show{display:block}
+.pg-result pre{background:#0a0a12;color:#a5f3c8;padding:1rem;border-radius:8px;overflow-x:auto;font-size:.8rem;max-height:320px;overflow-y:auto;border:1px solid var(--border)}
+.pg-result img.pg-img{max-width:100%;border-radius:8px;border:1px solid var(--border)}
+.pg-meta{font-size:.78rem;color:var(--muted);margin-bottom:.4rem}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:.4rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== STATS ===== */
+.stat-grid{display:flex;gap:1rem;flex-wrap:wrap}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.4rem;min-width:140px}
+.stat-card .num{font-size:1.6rem;font-weight:800}
+.stat-card .lbl{font-size:.8rem;color:var(--muted)}
+#stat-top{margin-top:1rem;font-size:.85rem;color:var(--muted)}
+#stat-top code{background:var(--bg2);padding:.15rem .45rem;border-radius:5px;font-size:.82em;color:var(--blue)}
+
+/* ===== FOOTER ===== */
+footer{text-align:center;padding:3rem 1.5rem 2rem;color:var(--muted);font-size:.88rem;border-top:1px solid var(--border);margin-top:2rem}
+footer .links{margin-bottom:1.2rem;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+footer .links a{display:inline-block;padding:.65rem 1.3rem;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem}
+.wa-link{background:#25d366;color:#fff}
+.ch-link{background:var(--accent2);color:#fff}
 </style>
 </head>
 <body>
-<header>
-<h1>🚀 HABI REST API</h1>
-<p>Dokumentasi & Status Endpoint</p>
-<div class="stats">
-<div class="stat"><b id="total-ep">0</b> Endpoint</div>
-<div class="stat"><b id="ok-ep" style="color:#10b981">0</b> Online</div>
-<div class="stat"><b id="err-ep" style="color:#ef4444">0</b> Offline</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>🚀 HABI REST API</h1>
+    <p>AI, Downloader, Generator, Tools & lainnya — satu API untuk semua kebutuhan bot WhatsApp-mu.</p>
+    <div class="hero-badges">
+      <div class="badge"><b id="h-total">–</b> Endpoint</div>
+      <div class="badge"><b id="h-ok" style="color:#a7f3d0">–</b> Online</div>
+      <div class="badge"><b>v2.0</b></div>
+    </div>
+    <div class="hero-cta">
+      <a href="#docs" class="btn btn-white">📖 Lihat Endpoint</a>
+      <a href="#playground-info" class="btn btn-ghost">▶ Coba Langsung</a>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <span class="logo">🚀 HABI API</span>
+  <input id="apikey-input" type="text" placeholder="🔑 API Key untuk test...">
+  <input id="search-input" type="text" placeholder="🔍 Cari endpoint...">
+  <button class="theme-btn" id="theme-btn" title="Ganti tema">☀️</button>
 </div>
-<button class="theme-toggle" onclick="document.body.classList.toggle('light');this.textContent=document.body.classList.contains('light')?'🌙':'☀️'">☀️</button>
-<input id="apikey-input" type="text" placeholder="Masukkan API Key untuk test..."><br>
-<input id="search-input" type="text" placeholder="🔍 Cari endpoint...">
-</header>
-<main>
-<div class="card">
-<h2>📊 Statistik Penggunaan</h2>
-<div class="stats" style="justify-content:flex-start">
-<div class="stat"><b id="stat-today">-</b> Request Hari Ini</div>
-<div class="stat"><b id="stat-total">-</b> Total Request</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <h3>Kategori</h3>
+    <div id="sidebar-links"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="docs">
+    <div class="card" id="playground-info">
+      <h2>📊 Statistik Penggunaan <span class="count">live</span></h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="num" id="stat-today">–</div><div class="lbl">Request hari ini</div></div>
+        <div class="stat-card"><div class="num" id="stat-total">–</div><div class="lbl">Total request</div></div>
+      </div>
+      <div id="stat-top"></div>
+    </div>
+    <div id="endpoint-list"></div>
+  </main>
 </div>
-<div id="stat-top" style="margin-top:1rem;font-size:.85rem;color:#9ca3af"></div>
-</div>
-<div id="docs"></div></main>
+
 <footer>
-<div style="margin-bottom:1rem">
-<a href="https://wa.me/6285181576338" target="_blank" style="display:inline-block;background:#25d366;color:#fff;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;margin:.25rem;font-weight:600">💬 WhatsApp</a>
-<a href="https://whatsapp.com/channel/0029Vb6SDXJDDmFXx0cHwF3f" target="_blank" style="display:inline-block;background:#4f46e5;color:#fff;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;margin:.25rem;font-weight:600">📢 Channel</a>
-</div>
-> © Habibih Cloud ID
+  <div class="links">
+    <a class="wa-link" href="https://wa.me/6285181576338" target="_blank">💬 WhatsApp</a>
+    <a class="ch-link" href="https://whatsapp.com/channel/0029Vb6SDXJDDmFXx0cHwF3f" target="_blank">📢 Channel</a>
+  </div>
+  > © Habibih Cloud ID — HABI REST API v2.0
 </footer>
+
 <script>
-const CATEGORIES = {
-  "🤖 AI": [
-    {path:"/api/ai", params:"text=Halo&apikey=KEY", desc:"Chat AI (Cloudflare Workers AI)"},
-    {path:"/api/text2img", params:"text=kucing&apikey=KEY", desc:"Text to Image (Flux)"},
-    {path:"/api/bluearchive", params:"apikey=KEY", desc:"Blue Archive image (Safebooru)"},
-    {path:"/api/randompap", params:"apikey=KEY", desc:"Random wallpaper"},
-    {path:"/api/stt", params:"(POST audio)&apikey=KEY", desc:"Suara jadi teks (Whisper)", method:"POST"},
-    {path:"/api/sentiment", params:"text=I+love+this&apikey=KEY", desc:"Analisa sentimen"},
-    {path:"/api/imgclass", params:"(POST gambar)&apikey=KEY", desc:"Tebak isi gambar", method:"POST"},
-    {path:"/api/translate", params:"text=Hello&from=english&to=indonesian&apikey=KEY", desc:"Translate AI"},
-  ],
-  "📥 Downloader": [
-    {path:"/api/tiktok", params:"url=LINK&apikey=KEY", desc:"TikTok video HD no watermark"},
-    {path:"/api/tiktokaudio", params:"url=LINK&apikey=KEY", desc:"TikTok audio MP3"},
-    {path:"/api/facebook", params:"url=LINK&apikey=KEY", desc:"Facebook video"},
-    {path:"/api/youtube", params:"url=LINK&type=mp3&apikey=KEY", desc:"YouTube MP3/MP4"},
-    {path:"/api/instagram", params:"url=LINK&apikey=KEY", desc:"Instagram post/reel"},
-    {path:"/api/twitter", params:"url=LINK&apikey=KEY", desc:"Twitter/X media"},
-    {path:"/api/pinterest", params:"url=LINK&apikey=KEY", desc:"Pinterest media"},
-    {path:"/api/capcut", params:"url=LINK&apikey=KEY", desc:"CapCut template"},
-    {path:"/api/aio", params:"url=LINK&apikey=KEY", desc:"All-in-one downloader"},
-    {path:"/api/ytsearch", params:"q=kucing&apikey=KEY", desc:"YouTube search"},
-  ],
-  "🎨 Generator": [
-    {path:"/api/brat", params:"text=Halo&apikey=KEY", desc:"Brat text → PNG"},
-    {path:"/api/bratvid", params:"text=Halo&apikey=KEY", desc:"Brat video → MP4"},
-    {path:"/api/iqc", params:"text=Halo&apikey=KEY", desc:"iPhone Quote Card"},
-    {path:"/api/iqc2", params:"text=Halo&apikey=KEY", desc:"Pink iPhone Quote Card"},
-    {path:"/api/qrcode", params:"text=Halo&apikey=KEY", desc:"QR Code generator"},
-    {path:"/api/ssweb", params:"url=https://google.com&apikey=KEY", desc:"Screenshot website"},
-    {path:"/api/fakech", params:"text=Halo&apikey=KEY", desc:"Fake iOS chat"},
-    {path:"/api/fakegc", params:"text=Halo&apikey=KEY", desc:"Fake group chat"},
-  ],
-  "🎮 Games": [
-    {path:"/api/tebakbendera", params:"apikey=KEY", desc:"Tebak bendera"},
-    {path:"/api/tebaklogo", params:"apikey=KEY", desc:"Tebak logo"},
-    {path:"/api/caklontong", params:"apikey=KEY", desc:"Cak lontong"},
-    {path:"/api/tebakkata", params:"apikey=KEY", desc:"Tebak kata"},
-  ],
-  "🛠️ Tools": [
-    {path:"/api/tourl", params:"(POST)&apikey=KEY", desc:"Upload file → URL", method:"POST"},
-    {path:"/api/removebg", params:"url=LINK_GAMBAR&apikey=KEY", desc:"Hapus background"},
-    {path:"/api/translate", params:"text=Hello&to=id&apikey=KEY", desc:"Translate teks"},
-    {path:"/api/shortlink", params:"url=https://google.com&apikey=KEY", desc:"Perpendek URL"},
-    {path:"/api/yttranscript", params:"url=LINK&apikey=KEY", desc:"YouTube transcript"},
-    {path:"/api/crypto", params:"coin=bitcoin&apikey=KEY", desc:"Harga crypto"},
-    {path:"/api/kurs", params:"from=USD&to=IDR&apikey=KEY", desc:"Kurs mata uang"},
-    {path:"/api/anime", params:"q=naruto&apikey=KEY", desc:"Info anime"},
-    {path:"/api/ephoto", params:"text=Halo&apikey=KEY", desc:"Ephoto effect"},
-    {path:"/api/blur", params:"url=LINK_GAMBAR&apikey=KEY", desc:"Blur gambar"},
-    {path:"/api/ocr", params:"(POST gambar)&apikey=KEY", desc:"Baca teks dari gambar", method:"POST"},
-    {path:"/api/tts", params:"text=Halo&lang=id&apikey=KEY", desc:"Teks jadi suara (MP3)"},
-    {path:"/api/github", params:"username=torvalds&apikey=KEY", desc:"Info profil GitHub"},
-    {path:"/api/watermark", params:"url=LINK_GAMBAR&text=HABI&apikey=KEY", desc:"Watermark gambar"},
-    {path:"/api/palette", params:"url=LINK_GAMBAR&apikey=KEY", desc:"Warna dominan gambar"},
-    {path:"/api/dns", params:"domain=google.com&type=A&apikey=KEY", desc:"DNS lookup"},
-    {path:"/api/carbon", params:"code=console.log(1)&apikey=KEY", desc:"Kode jadi gambar"},
-    {path:"/api/speedtest", params:"apikey=KEY", desc:"Speedtest VPS"},
-  ],
-  "☪️ Islami": [
-    {path:"/api/kisahnabi", params:"nabi=muhammad&apikey=KEY", desc:"Kisah nabi"},
-  ],
-};
+// ---------- Tema ----------
+const themeBtn = document.getElementById('theme-btn');
+function setTheme(light){
+  document.body.classList.toggle('light', light);
+  themeBtn.textContent = light ? '🌙' : '☀️';
+  try{ localStorage.setItem('habi-theme', light?'light':'dark'); }catch{}
+}
+themeBtn.onclick = () => setTheme(!document.body.classList.contains('light'));
+try{ if(localStorage.getItem('habi-theme')==='light') setTheme(true); }catch{}
+
+// ---------- Kategori dinamis dari /docs/endpoints ----------
+const CAT_ICON = { ai:'🤖', downloader:'📥', generator:'🎨', tools:'🛠️', games:'🎮', islami:'☪️', store:'🛍️', payment:'💳', ampreset:'🎛️' };
+function catName(sub){
+  const s = sub.toLowerCase();
+  const map = {
+    ai:'🤖 AI', text2img:'🤖 AI', stt:'🤖 AI', sentiment:'🤖 AI', imgclass:'🤖 AI',
+    tiktok:'📥 Downloader', tiktokaudio:'📥 Downloader', instagram:'📥 Downloader',
+    youtube:'📥 Downloader', ytdl:'📥 Downloader', ytmp3pc:'📥 Downloader',
+    facebook:'📥 Downloader', spotify:'📥 Downloader', twitter:'📥 Downloader',
+    pinterest:'📥 Downloader', capcut:'📥 Downloader', mediafire:'📥 Downloader',
+    gdrive:'📥 Downloader', threads:'📥 Downloader', aio:'📥 Downloader', ytsearch:'📥 Downloader',
+  };
+  return map[s] || '🧰 ' + sub;
+}
 
 let totalOk = 0, totalErr = 0;
+const epState = {}; // path -> {status}
 
-async function render() {
-  const main = document.getElementById('docs');
-  let total = 0;
-  let CATS = CATEGORIES;
+async function loadEndpoints(){
+  const list = document.getElementById('endpoint-list');
+  const sidebar = document.getElementById('sidebar-links');
+  let groups = {};
   try {
     const r = await fetch('/docs/endpoints');
     const j = await r.json();
-    if (j.status && j.endpoints?.length) {
-      // Kelompokkan by prefix path jadi kategori dinamis
-      CATS = {};
-      for (const ep of j.endpoints) {
+    if(j.status && j.endpoints?.length){
+      for(const ep of j.endpoints){
         const parts = ep.path.split('/').filter(Boolean);
         let cat = '🔧 Lainnya';
-        if (parts[0] === 'api' && parts[1]) {
-          const sub = parts[1].toLowerCase();
-          if (['ai','text2img','translate','sentiment','imgclass','stt'].includes(sub)) cat = '🤖 AI';
-          else if (['tiktok','instagram','youtube','ytdl','ytmp3pc','facebook','spotify','twitter','pinterest','capcut','mediafire','gdrive','threads','aio','ytsearch'].includes(sub)) cat = '📥 Downloader';
-          else cat = '🧰 ' + parts[1];
-        } else if (parts[0] === 'store') cat = '🛍️ Store';
-        if (!CATS[cat]) CATS[cat] = [];
-        CATS[cat].push({ path: ep.path, params: 'apikey=<redacted>', desc: ep.methods.join(',') + ' ' + ep.path, method: ep.methods[0] });
+        if(parts[0]==='api' && parts[1]) cat = catName(parts[1]);
+        else if(parts[0]==='store') cat = '🛍️ Store';
+        (groups[cat] = groups[cat] || []).push({ path: ep.path, method: ep.methods[0]||'GET', methods: ep.methods });
       }
     }
-  } catch {}
-  for (const [cat, eps] of Object.entries(CATS)) {
+  } catch(e){
+    list.innerHTML = '<div class="card"><h2>⚠️ Gagal memuat endpoint</h2><p style="color:var(--muted)">Refresh halaman untuk coba lagi.</p></div>';
+    return;
+  }
+
+  const cats = Object.keys(groups).sort();
+  let total = 0;
+  const frag = document.createDocumentFragment();
+
+  cats.forEach((cat, ci) => {
+    const eps = groups[cat];
     total += eps.length;
+    const anchor = 'cat-' + ci;
+
+    // Sidebar link
+    const a = document.createElement('a');
+    a.href = '#' + anchor;
+    a.innerHTML = cat + ' <span class="count">' + eps.length + '</span>';
+    sidebar.appendChild(a);
+
+    // Card
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `<h2>${cat} (${eps.length})</h2>`;
+    card.id = anchor;
+    card.innerHTML = '<h2>' + cat + ' <span class="count">' + eps.length + '</span></h2>';
+    const wrap = document.createElement('div');
     eps.forEach((ep, i) => {
-      const id = `st${cat}${i}`.replace(/[^a-z0-9]/gi,'');
+      const id = 'ep' + ci + '_' + i;
       const div = document.createElement('div');
       div.className = 'endpoint';
+      div.dataset.search = (ep.path + ' ' + cat).toLowerCase();
       div.innerHTML =
-        '<div class="status checking" id="'+id+'"></div>' +
-        '<div class="ep-info">' +
-          '<span class="method '+(ep.method==='POST'?'post':'')+'">'+(ep.method||'GET')+'</span>' +
-          '<span class="url">'+ep.path+'?<span class="param">'+ep.params+'</span></span>' +
-          '<div class="desc">'+ep.desc+'</div>' +
-          '<button class="try-btn" data-p="'+ep.path+'" data-q="'+ep.params+'">▶ Test</button>' +
-        '<button class="copy-btn" data-url="'+ep.path+'">📋</button>' +
-        '<span class="uptime" id="up-'+id+'"></span>' +
+        '<div class="ep-head">' +
+          '<div class="status-dot checking" id="dot-' + id + '"></div>' +
+          '<div class="ep-main">' +
+            '<span class="method ' + ep.method.toLowerCase() + '">' + ep.method + '</span>' +
+            '<span class="ep-path">' + ep.path + '</span>' +
+            '<div class="ep-desc">Klik untuk buka playground & test langsung</div>' +
+          '</div>' +
+          '<button class="ep-toggle" aria-label="toggle">▾</button>' +
+        '</div>' +
+        '<div class="playground" id="pg-' + id + '">' +
+          '<div class="pg-row"><label>Parameter</label><input id="in-' + id + '" placeholder="cth: text=Halo&lang=id  (kosongkan bila tidak perlu)"></div>' +
+          '<div class="pg-actions">' +
+            '<button class="btn btn-run" data-run="' + id + '">▶ Jalankan</button>' +
+            '<button class="btn btn-copy" data-copy="' + id + '">📋 Copy URL</button>' +
+          '</div>' +
+          '<div class="pg-result" id="res-' + id + '"></div>' +
         '</div>';
-      card.appendChild(div);
+      // Toggle
+      div.querySelector('.ep-head').addEventListener('click', () => div.classList.toggle('open'));
+      wrap.appendChild(div);
       checkStatus(ep.path, id);
     });
-    main.appendChild(card);
-  }
-  document.getElementById('total-ep').textContent = total;
-  main.querySelectorAll('.try-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      const key = document.getElementById('apikey-input').value || 'KEY';
-      window.open(b.dataset.p + '?' + b.dataset.q.replace(/KEY/g, key), '_blank');
-    });
+    card.appendChild(wrap);
+    frag.appendChild(card);
+  });
+
+  list.appendChild(frag);
+  document.getElementById('h-total').textContent = total;
+
+  // Run buttons
+  list.addEventListener('click', (e) => {
+    const runBtn = e.target.closest('[data-run]');
+    const copyBtn = e.target.closest('[data-copy]');
+    if(runBtn) runTest(runBtn.dataset.run);
+    if(copyBtn) copyUrl(copyBtn.dataset.copy, copyBtn);
   });
 }
 
-async function checkStatus(path, id) {
-  const el = document.getElementById(id);
-  try {
-    const r = await fetch(path, { method:'GET', signal: AbortSignal.timeout(10000) });
-    if (r.status === 401 || r.status === 400 || r.status === 200) { el.className='status ok'; totalOk++; }
-    else { el.className='status err'; totalErr++; }
-  } catch { el.className='status err'; totalErr++; }
-  document.getElementById('ok-ep').textContent = totalOk;
-  document.getElementById('err-ep').textContent = totalErr;
+function apiKey(){
+  return document.getElementById('apikey-input').value.trim();
 }
 
-// Search filter
+function buildUrl(id){
+  const epDiv = document.getElementById('pg-' + id).closest('.endpoint');
+  const path = epDiv.querySelector('.ep-path').textContent.trim();
+  const params = document.getElementById('in-' + id).value.trim();
+  const key = apiKey();
+  let q = params;
+  if(key && !/apikey=/i.test(q)) q = (q ? q + '&' : '') + 'apikey=' + encodeURIComponent(key);
+  return path + (q ? '?' + q : '');
+}
+
+async function runTest(id){
+  const resBox = document.getElementById('res-' + id);
+  const url = buildUrl(id);
+  const t0 = performance.now();
+  resBox.className = 'pg-result show';
+  resBox.innerHTML = '<div class="pg-meta"><span class="spinner"></span>Menghubungi API...</div>';
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    const ms = Math.round(performance.now() - t0);
+    const ct = r.headers.get('content-type') || '';
+    let html = '<div class="pg-meta">HTTP ' + r.status + ' • ' + ms + 'ms • ' + ct.split(';')[0] + '</div>';
+    if(ct.includes('application/json')){
+      const j = await r.json().catch(() => null);
+      html += '<pre>' + escapeHtml(JSON.stringify(j, null, 2)).slice(0, 4000) + '</pre>';
+    } else if(ct.startsWith('image/')){
+      const blob = await r.blob();
+      html += '<img class="pg-img" src="' + URL.createObjectURL(blob) + '" alt="hasil">';
+    } else if(ct.startsWith('audio/') || ct.startsWith('video/')){
+      const blob = await r.blob();
+      const tag = ct.startsWith('audio/') ? 'audio' : 'video';
+      html += '<' + tag + ' controls style="max-width:100%" src="' + URL.createObjectURL(blob) + '"></' + tag + '>';
+    } else {
+      const t = await r.text();
+      html += '<pre>' + escapeHtml(t).slice(0, 2000) + '</pre>';
+    }
+    resBox.innerHTML = html;
+  } catch(err){
+    resBox.innerHTML = '<div class="pg-meta" style="color:var(--red)">❌ ' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function copyUrl(id, btn){
+  navigator.clipboard.writeText(location.origin + buildUrl(id)).then(() => {
+    const old = btn.textContent; btn.textContent = '✅';
+    setTimeout(() => btn.textContent = old, 1500);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function checkStatus(path, id){
+  const el = document.getElementById('dot-' + id);
+  if(!el) return;
+  try {
+    const r = await fetch(path, { method:'GET', signal: AbortSignal.timeout(10000) });
+    const ok = [200, 400, 401].includes(r.status);
+    el.className = 'status-dot ' + (ok ? 'ok' : 'err');
+    ok ? totalOk++ : totalErr++;
+  } catch { el.className = 'status-dot err'; totalErr++; }
+  document.getElementById('h-ok').textContent = totalOk;
+}
+
+// ---------- Search ----------
 document.getElementById('search-input').addEventListener('input', (e) => {
   const q = e.target.value.toLowerCase();
   document.querySelectorAll('.endpoint').forEach(el => {
-    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    el.style.display = el.dataset.search.includes(q) ? '' : 'none';
   });
   document.querySelectorAll('.card').forEach(card => {
-    const visible = card.querySelectorAll('.endpoint:not([style*="none"])').length;
-    if (card.querySelector('#docs') === null && card.id !== '') {}
+    if(!card.id.startsWith('cat-')) return;
+    const vis = card.querySelectorAll('.endpoint:not([style*="none"])').length;
+    card.style.display = vis ? '' : 'none';
   });
 });
 
-// Copy URL ke clipboard
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('copy-btn')) {
-    navigator.clipboard.writeText(e.target.dataset.url).then(() => {
-      e.target.textContent = '✅'; setTimeout(() => e.target.textContent = '📋', 1500);
-    });
-  }
-});
-
-render();
-
-// Load statistik via SSE (real-time)
-function updateStatsUI(d) {
-  document.getElementById('stat-today').textContent = d.today.toLocaleString('id-ID')
-  document.getElementById('stat-total').textContent = d.total.toLocaleString('id-ID')
-  const top = document.getElementById('stat-top')
-  if (d.top.length) {
-    top.innerHTML = '<b>🔥 Endpoint terpopuler:</b><br>' +
-      d.top.map((t, i) => `${i+1}. <code>${t.endpoint}</code> — ${t.hits}x`).join('<br>')
-  }
+// ---------- Stats (SSE) ----------
+function updateStats(d){
+  document.getElementById('stat-today').textContent = (+d.today||0).toLocaleString('id-ID');
+  document.getElementById('stat-total').textContent = (+d.total||0).toLocaleString('id-ID');
+  const top = document.getElementById('stat-top');
+  if(d.top?.length) top.innerHTML = '<b>🔥 Terpopuler:</b><br>' + d.top.map((t,i)=>`${i+1}. <code>${t.endpoint}</code> — ${t.hits}x`).join('<br>');
 }
 try {
-  const es = new EventSource('/stats/stream')
-  es.onmessage = (e) => {
-    try { updateStatsUI(JSON.parse(e.data)) } catch {}
-  }
-  es.onerror = () => { /* auto-reconnect by browser */ }
-} catch {
-  // Fallback: polling 5 detik kalau SSE gagal
+  const es = new EventSource('/stats/stream');
+  es.onmessage = e => { try{ updateStats(JSON.parse(e.data)); }catch{} };
+} catch{
   setInterval(async () => {
-    try {
-      const r = await fetch('/stats')
-      const d = await r.json()
-      if (d.status) updateStatsUI(d)
-    } catch {}
-  }, 5000)
+    try{ const r = await fetch('/stats'); const d = await r.json(); if(d.status) updateStats(d); }catch{}
+  }, 5000);
 }
+
+loadEndpoints();
 </script>
 </body>
 </html>
